@@ -103,8 +103,11 @@ void Start()
 {
     // Create the server
     server = new Server();
-    server.AddNodeManager(new NodeManagerFactory());
-
+    
+    //server.AddNodeManager(new NodeManagerFactory());
+    
+    server.AddNodeManager(new PipetteNodeManagerFactory());
+    
     // Start the server
     try
     {
