@@ -2,6 +2,7 @@
 <UANodeSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xmlns:uax="http://opcfoundation.org/UA/2008/02/Types.xsd"
            xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd">
+    
     <NamespaceUris>
         <Uri>http://lab.server/Pipette/</Uri>
     </NamespaceUris>
