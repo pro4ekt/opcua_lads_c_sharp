@@ -19,125 +19,113 @@
         <Alias Alias="BaseDataVariableType">i=63</Alias>
     </Aliases>
 
-    <!-- 1. Корневой объект: PipetteDevice -->
-    <UAObject NodeId="ns=1;s=PipetteDevice" BrowseName="1:PipetteDevice">
-        <DisplayName>PipetteDevice</DisplayName>
+    <!-- 1. Корневой объект: Pipette -->
+    <UAObject NodeId="ns=1;s=Pipette" BrowseName="1:Pipette">
+        <DisplayName>Pipette</DisplayName>
         <References>
             <Reference ReferenceType="Organizes" IsForward="false">i=85</Reference> <!-- ObjectsFolder -->
             <Reference ReferenceType="HasTypeDefinition">FolderType</Reference>
-            
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_DeviceId</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_Model</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_MinVolume</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_MaxVolume</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_BatteryLevel</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_CurrentState</Reference>
-            
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_ChannelComponent</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_BatteryComponent</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_PipettingFunction</Reference>
+
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_DeviceComponent</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_BatteryComponent</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_Functions</Reference>
         </References>
     </UAObject>
 
-    <!-- Переменные для PipetteDevice -->
-    <UAVariable NodeId="ns=1;s=PipetteDevice_DeviceId" BrowseName="1:DeviceId" DataType="String" AccessLevel="1" UserAccessLevel="1">
+    <!-- Переменные для Device -->
+    <UAVariable NodeId="ns=1;s=Pipette_DeviceComponent_DeviceId" BrowseName="1:DeviceId" DataType="String" AccessLevel="1" UserAccessLevel="1">
         <DisplayName>DeviceId</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette_DeviceComponent</Reference>
             <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
         </References>
         <Value>
             <uax:String>PIP-001</uax:String>
         </Value>
     </UAVariable>
-    <UAVariable NodeId="ns=1;s=PipetteDevice_Model" BrowseName="1:Model" DataType="String" AccessLevel="1" UserAccessLevel="1">
+    <UAVariable NodeId="ns=1;s=Pipette_DeviceComponent_Model" BrowseName="1:Model" DataType="String" AccessLevel="1" UserAccessLevel="1">
         <DisplayName>Model</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette_DeviceComponent</Reference>
             <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
         </References>
         <Value>
             <uax:String>LADS-Pipette-V1</uax:String>
         </Value>
     </UAVariable>
-    <UAVariable NodeId="ns=1;s=PipetteDevice_MinVolume" BrowseName="1:MinVolume" DataType="Double" AccessLevel="1" UserAccessLevel="1">
+    <UAVariable NodeId="ns=1;s=Pipette_DeviceComponent_MinVolume" BrowseName="1:MinVolume" DataType="Double" AccessLevel="1" UserAccessLevel="1">
         <DisplayName>MinVolume</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette_DeviceComponent</Reference>
             <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
         </References>
         <Value>
             <uax:Double>0.5</uax:Double>
         </Value>
     </UAVariable>
-    <UAVariable NodeId="ns=1;s=PipetteDevice_MaxVolume" BrowseName="1:MaxVolume" DataType="Double" AccessLevel="1" UserAccessLevel="1">
+    <UAVariable NodeId="ns=1;s=Pipette_DeviceComponent_MaxVolume" BrowseName="1:MaxVolume" DataType="Double" AccessLevel="1" UserAccessLevel="1">
         <DisplayName>MaxVolume</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette_DeviceComponent</Reference>
             <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
         </References>
         <Value>
             <uax:Double>10.0</uax:Double>
         </Value>
     </UAVariable>
-    <UAVariable NodeId="ns=1;s=PipetteDevice_BatteryLevel" BrowseName="1:BatteryLevel" DataType="UInt16" AccessLevel="1" UserAccessLevel="1">
+    <UAVariable NodeId="ns=1;s=Pipette_DeviceComponent_CurrentVolume" BrowseName="1:CurrentVolume" DataType="Double" AccessLevel="3" UserAccessLevel="3">
+        <DisplayName>CurrentVolume</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette_DeviceComponent</Reference>
+            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
+        </References>
+        <Value>
+            <uax:Double>5000.0</uax:Double>
+        </Value>
+    </UAVariable>
+    <UAVariable NodeId="ns=1;s=Pipette_DeviceComponent_TipPresent" BrowseName="1:TipPresent" DataType="Boolean" AccessLevel="1" UserAccessLevel="1">
+        <DisplayName>TipPresent</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette_DeviceComponent</Reference>
+            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
+        </References>
+        <Value>
+            <uax:Boolean>false</uax:Boolean>
+        </Value>
+    </UAVariable>
+
+    <!-- 2. Дочерний объект: DeviceComponent -->
+    <UAObject NodeId="ns=1;s=Pipette_DeviceComponent" BrowseName="1:DeviceComponent">
+        <DisplayName>DeviceComponent</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette</Reference>
+            <Reference ReferenceType="HasTypeDefinition">FolderType</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_DeviceComponent_DeviceId</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_DeviceComponent_Model</Reference>
+            
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_DeviceComponent_MinVolume</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_DeviceComponent_MaxVolume</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_DeviceComponent_CurrentVolume</Reference>
+            
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_DeviceComponent_TipPresent</Reference>
+        </References>
+    </UAObject>
+    
+    <!-- Переменные для Battery -->
+    <UAVariable NodeId="ns=1;s=Pipette_BatteryComponent_BatteryLevel" BrowseName="1:BatteryLevel" DataType="UInt16" AccessLevel="1" UserAccessLevel="1">
         <DisplayName>BatteryLevel</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette_BatteryComponent</Reference>
             <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
         </References>
         <Value>
             <uax:UInt16>100</uax:UInt16>
         </Value>
     </UAVariable>
-    <UAVariable NodeId="ns=1;s=PipetteDevice_CurrentState" BrowseName="1:CurrentState" DataType="String" AccessLevel="1" UserAccessLevel="1">
-        <DisplayName>CurrentState</DisplayName>
+    <UAVariable NodeId="ns=1;s=Pipette_BatteryComponent_Charging" BrowseName="1:Charging" DataType="Boolean" AccessLevel="1" UserAccessLevel="1">
+        <DisplayName>Charging</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice</Reference>
-            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
-        </References>
-        <Value>
-            <uax:String>Idle</uax:String>
-        </Value>
-    </UAVariable>
-
-    <!-- 2. Дочерний объект: ChannelComponent -->
-    <UAObject NodeId="ns=1;s=PipetteDevice_ChannelComponent" BrowseName="1:ChannelComponent">
-        <DisplayName>ChannelComponent</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice</Reference>
-            <Reference ReferenceType="HasTypeDefinition">FolderType</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_ChannelComponent_ChannelId</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_ChannelComponent_CurrentVolumeSetting</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_ChannelComponent_TipPresent</Reference>
-        </References>
-    </UAObject>
-
-    <UAVariable NodeId="ns=1;s=PipetteDevice_ChannelComponent_ChannelId" BrowseName="1:ChannelId" DataType="UInt16" AccessLevel="1" UserAccessLevel="1">
-        <DisplayName>ChannelId</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice_ChannelComponent</Reference>
-            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
-        </References>
-        <Value>
-            <uax:UInt16>1</uax:UInt16>
-        </Value>
-    </UAVariable>
-    <!-- isWritable = true -> AccessLevel = 3 -->
-    <UAVariable NodeId="ns=1;s=PipetteDevice_ChannelComponent_CurrentVolumeSetting" BrowseName="1:CurrentVolumeSetting" DataType="Double" AccessLevel="3" UserAccessLevel="3">
-        <DisplayName>CurrentVolumeSetting</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice_ChannelComponent</Reference>
-            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
-        </References>
-        <Value>
-            <uax:Double>5.0</uax:Double>
-        </Value>
-    </UAVariable>
-    <UAVariable NodeId="ns=1;s=PipetteDevice_ChannelComponent_TipPresent" BrowseName="1:TipPresent" DataType="Boolean" AccessLevel="1" UserAccessLevel="1">
-        <DisplayName>TipPresent</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice_ChannelComponent</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette_BatteryComponent</Reference>
             <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
         </References>
         <Value>
@@ -146,123 +134,52 @@
     </UAVariable>
 
     <!-- 3. Дочерний объект: BatteryComponent -->
-    <UAObject NodeId="ns=1;s=PipetteDevice_BatteryComponent" BrowseName="1:BatteryComponent">
+    <UAObject NodeId="ns=1;s=Pipette_BatteryComponent" BrowseName="1:BatteryComponent">
         <DisplayName>BatteryComponent</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette</Reference>
             <Reference ReferenceType="HasTypeDefinition">FolderType</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_BatteryComponent_BatteryLevel</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_BatteryComponent_Charging</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_BatteryComponent_BatteryLevel</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_BatteryComponent_Charging</Reference>
         </References>
     </UAObject>
-
-    <UAVariable NodeId="ns=1;s=PipetteDevice_BatteryComponent_BatteryLevel" BrowseName="1:BatteryLevel" DataType="UInt16" AccessLevel="1" UserAccessLevel="1">
-        <DisplayName>BatteryLevel</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice_BatteryComponent</Reference>
-            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
-        </References>
-        <Value>
-            <uax:UInt16>100</uax:UInt16>
-        </Value>
-    </UAVariable>
-    <UAVariable NodeId="ns=1;s=PipetteDevice_BatteryComponent_Charging" BrowseName="1:Charging" DataType="Boolean" AccessLevel="1" UserAccessLevel="1">
-        <DisplayName>Charging</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice_BatteryComponent</Reference>
-            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
-        </References>
-        <Value>
-            <uax:Boolean>false</uax:Boolean>
-        </Value>
-    </UAVariable>
-
-    <!-- 4. Дочерний объект: PipettingFunction -->
-    <UAObject NodeId="ns=1;s=PipetteDevice_PipettingFunction" BrowseName="1:PipettingFunction">
-        <DisplayName>PipettingFunction</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice</Reference>
-            <Reference ReferenceType="HasTypeDefinition">FolderType</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_PipettingFunction_TargetVolume</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_PipettingFunction_Mode</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_PipettingFunction_Speed</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_PipettingFunction_PipettingState</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_PipettingFunction_Progress</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_PipettingFunction_ConfigurePipetting</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_PipettingFunction_StartPipetting</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=PipetteDevice_PipettingFunction_AbortPipetting</Reference>
-        </References>
-    </UAObject>
-
-    <UAVariable NodeId="ns=1;s=PipetteDevice_PipettingFunction_TargetVolume" BrowseName="1:TargetVolume" DataType="Double" AccessLevel="3" UserAccessLevel="3">
-        <DisplayName>TargetVolume</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice_PipettingFunction</Reference>
-            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
-        </References>
-        <Value>
-            <uax:Double>5.0</uax:Double>
-        </Value>
-    </UAVariable>
-    <UAVariable NodeId="ns=1;s=PipetteDevice_PipettingFunction_Mode" BrowseName="1:Mode" DataType="String" AccessLevel="3" UserAccessLevel="3">
-        <DisplayName>Mode</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice_PipettingFunction</Reference>
-            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
-        </References>
-        <Value>
-            <uax:String>Aspirate</uax:String>
-        </Value>
-    </UAVariable>
-    <UAVariable NodeId="ns=1;s=PipetteDevice_PipettingFunction_Speed" BrowseName="1:Speed" DataType="UInt16" AccessLevel="3" UserAccessLevel="3">
+    
+    <!-- Переменные для Functions -->
+    <UAVariable NodeId="ns=1;s=Pipette_Functions_Speed" BrowseName="1:Speed" DataType="UInt16" AccessLevel="3" UserAccessLevel="3">
         <DisplayName>Speed</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice_PipettingFunction</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette_Functions</Reference>
             <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
         </References>
         <Value>
             <uax:UInt16>50</uax:UInt16>
         </Value>
     </UAVariable>
-    <UAVariable NodeId="ns=1;s=PipetteDevice_PipettingFunction_PipettingState" BrowseName="1:PipettingState" DataType="String" AccessLevel="1" UserAccessLevel="1">
-        <DisplayName>PipettingState</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice_PipettingFunction</Reference>
-            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
-        </References>
-        <Value>
-            <uax:String>Idle</uax:String>
-        </Value>
-    </UAVariable>
-    <UAVariable NodeId="ns=1;s=PipetteDevice_PipettingFunction_Progress" BrowseName="1:Progress" DataType="UInt16" AccessLevel="1" UserAccessLevel="1">
-        <DisplayName>Progress</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice_PipettingFunction</Reference>
-            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
-        </References>
-        <Value>
-            <uax:UInt16>0</uax:UInt16>
-        </Value>
-    </UAVariable>
-
+    
     <!-- Методы RPC (Executable="true") -->
-    <UAMethod NodeId="ns=1;s=PipetteDevice_PipettingFunction_ConfigurePipetting" BrowseName="1:ConfigurePipetting">
-        <DisplayName>ConfigurePipetting</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice_PipettingFunction</Reference>
-        </References>
-    </UAMethod>
-    <UAMethod NodeId="ns=1;s=PipetteDevice_PipettingFunction_StartPipetting" BrowseName="1:StartPipetting">
+    <UAMethod NodeId="ns=1;s=Pipette_Functions_StartPipetting" BrowseName="1:StartPipetting">
         <DisplayName>StartPipetting</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice_PipettingFunction</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette_Functions</Reference>
         </References>
     </UAMethod>
-    <UAMethod NodeId="ns=1;s=PipetteDevice_PipettingFunction_AbortPipetting" BrowseName="1:AbortPipetting">
+    <UAMethod NodeId="ns=1;s=Pipette_Functions_AbortPipetting" BrowseName="1:AbortPipetting">
         <DisplayName>AbortPipetting</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=PipetteDevice_PipettingFunction</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette_Functions</Reference>
         </References>
     </UAMethod>
 
+    <!-- 4. Дочерний объект: Functions -->
+    <UAObject NodeId="ns=1;s=Pipette_Functions" BrowseName="1:Functions">
+        <DisplayName>Functions</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Pipette</Reference>
+            <Reference ReferenceType="HasTypeDefinition">FolderType</Reference>
+            
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_Functions_Speed</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_Functions_StartPipetting</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;s=Pipette_Functions_AbortPipetting</Reference>
+        </References>
+    </UAObject>
 </UANodeSet>

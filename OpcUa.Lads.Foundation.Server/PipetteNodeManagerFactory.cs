@@ -2,6 +2,8 @@
 using Opc.Ua.Server;
 using System.IO;
 using Opc.Ua.Export;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OpcUa.Lads.Foundation.Server
 {
@@ -17,6 +19,11 @@ namespace OpcUa.Lads.Foundation.Server
 
     public class PipetteNodeManager : CustomNodeManager2
     {
+        // Добавляем поля для хранения ссылок на узлы переменных и токен отмены задачи
+        private BaseDataVariableState _currentVolumeVar;
+        private BaseDataVariableState _speedVar;
+        private CancellationTokenSource _pipettingCts;
+
         /// <summary>
         /// Конструктор NodeManager-а для нашего устройства. 
         /// Мы передаем базовому классу пространство имен (URI), за которое он отвечает.
@@ -90,28 +97,33 @@ namespace OpcUa.Lads.Foundation.Server
         {
             ushort ns = NamespaceIndexes[0];
 
-            // Находим метод ConfigurePipetting по его NodeId (из XML) и привязываем C# делегат
+            // Сохраняем ссылки на переменные, чтобы менять их из C# логики
+            _currentVolumeVar = FindPredefinedNode(new NodeId("Pipette_DeviceComponent_CurrentVolume", ns), typeof(BaseDataVariableState)) as BaseDataVariableState;
+            _speedVar = FindPredefinedNode(new NodeId("Pipette_Functions_Speed", ns), typeof(BaseDataVariableState)) as BaseDataVariableState;
+
+           /*  // Находим метод ConfigurePipetting по его NodeId (из XML) и привязываем C# делегат
             if (FindPredefinedNode(new NodeId("PipetteDevice_PipettingFunction_ConfigurePipetting", ns), typeof(MethodState)) is MethodState configureMethod)
             {
                 configureMethod.OnCallMethod = Method_OnCall;
             }
+            */
 
             // Находим метод StartPipetting
-            if (FindPredefinedNode(new NodeId("PipetteDevice_PipettingFunction_StartPipetting", ns), typeof(MethodState)) is MethodState startMethod)
+            if (FindPredefinedNode(new NodeId("Pipette_Functions_StartPipetting", ns), typeof(MethodState)) is MethodState startMethod)
             {
                 startMethod.OnCallMethod = Method_OnCall;
             }
 
             // Находим метод AbortPipetting
-            if (FindPredefinedNode(new NodeId("PipetteDevice_PipettingFunction_AbortPipetting", ns), typeof(MethodState)) is MethodState abortMethod)
+            if (FindPredefinedNode(new NodeId("Pipette_Functions_AbortPipetting", ns), typeof(MethodState)) is MethodState abortMethod)
             {
                 abortMethod.OnCallMethod = Method_OnCall;
             }
 
             // Находим переменную Speed (которая доступна для записи AccessLevel=3) и привязываем перехват при изменении
-            if (FindPredefinedNode(new NodeId("PipetteDevice_PipettingFunction_Speed", ns), typeof(BaseDataVariableState)) is BaseDataVariableState speedVar)
+            if (_speedVar != null)
             {
-                speedVar.OnWriteValue = OnVariableWrite; // Коллбек сработает, когда клиент по сети пришлет новое значение
+                _speedVar.OnWriteValue = OnVariableWrite; // Коллбек сработает, когда клиент по сети пришлет новое значение
             }
         }
 
@@ -130,10 +142,79 @@ namespace OpcUa.Lads.Foundation.Server
         /// </summary>
         private ServiceResult Method_OnCall(ISystemContext context, MethodState method, IList<object> inputArguments, IList<object> outputArguments)
         {
-            // method.BrowseName.Name - Имя метода (StartPipetting, AbortPipetting и т.д.)
             Console.WriteLine($"[Pipette Remote Control]: Execute Command => '{method.BrowseName.Name}'");
-            // Тут мы могли бы запустить реальный мотор пипетки или сбросить операцию
+
+            if (method.BrowseName.Name == "StartPipetting")
+            {
+                StartPipettingTask();
+            }
+            else if (method.BrowseName.Name == "AbortPipetting")
+            {
+                // Останавливаем фоновый процесс, если нажали Abort
+                _pipettingCts?.Cancel();
+                Console.WriteLine("[Pipette]: Pipetting manually aborted.");
+            }
+
             return StatusCodes.Good;
+        }
+
+        /// <summary>
+        /// Фоновая задача (Thread), которая уменьшает объем раз в секунду.
+        /// </summary>
+        private void StartPipettingTask()
+        {
+            // Отменяем предыдущую задачу, если она была запущена
+            _pipettingCts?.Cancel();
+            _pipettingCts = new CancellationTokenSource();
+            var token = _pipettingCts.Token;
+
+            // Запускаем асинхронно в фоне, чтобы не блокировать сетевой поток OPC UA
+            Task.Run(async () =>
+            {
+                try
+                {
+                    while (!token.IsCancellationRequested)
+                    {
+                        double currentVol;
+                        ushort speed;
+
+                        // Обязательно блокируем Lock, так как сервер читает эти данные параллельно
+                        lock (Lock)
+                        {
+                            currentVol = (double)_currentVolumeVar.Value;
+                            speed = (ushort)_speedVar.Value;
+                        }
+
+                        if (currentVol <= 0)
+                        {
+                            Console.WriteLine("[Pipette]: Target volume reached (0).");
+                            break;
+                        }
+
+                        // Уменьшаем объем на значение скорости
+                        currentVol -= speed;
+                        if (currentVol < 0) currentVol = 0; // Защита от отрицательных значений
+
+                        // Записываем новые значения в адресное пространство сервера
+                        lock (Lock)
+                        {
+                            _currentVolumeVar.Value = currentVol;
+                            // Обязательно обновляем метку времени и уведомляем подписчиков(клиентов)!
+                            _currentVolumeVar.Timestamp = DateTime.UtcNow;
+                            _currentVolumeVar.ClearChangeMasks(SystemContext, false);
+                        }
+
+                        Console.WriteLine($"[Pipette Process]: Current Volume = {currentVol}");
+
+                        // Ждем 1 секунду до следующего шага
+                        await Task.Delay(1000, token);
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    // Задача была отменена токеном
+                }
+            }, token);
         }
     }
 }
