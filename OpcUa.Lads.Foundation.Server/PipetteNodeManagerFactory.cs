@@ -46,8 +46,9 @@ namespace OpcUa.Lads.Foundation.Server
                 references.Add(new NodeStateReference(ReferenceTypeIds.Organizes, false, pipetteDevice.NodeId));
 
                 // Вспомогательный метод для быстрого создания переменных
-                BaseDataVariableState CreateVariable(NodeState parent, string name, NodeId dataType, object initialValue)
+                BaseDataVariableState CreateVariable(NodeState parent, string name, NodeId dataType, object initialValue, bool isWritable = false)
                 {
+                    byte accessLevel = isWritable ? (byte)(AccessLevels.CurrentRead | AccessLevels.CurrentWrite) : AccessLevels.CurrentRead;
                     var variable = new BaseDataVariableState(parent)
                     {
                         NodeId = new NodeId(parent.NodeId.Identifier + "_" + name, ns),
@@ -55,10 +56,21 @@ namespace OpcUa.Lads.Foundation.Server
                         DisplayName = new LocalizedText(name),
                         DataType = dataType,
                         ValueRank = ValueRanks.Scalar,
-                        AccessLevel = AccessLevels.CurrentRead,
-                        UserAccessLevel = AccessLevels.CurrentRead,
+                        AccessLevel = accessLevel,
+                        UserAccessLevel = accessLevel,
                         Value = initialValue
                     };
+
+                    if (isWritable)
+                    {
+                        // Перехватываем событие записи (когда клиент меняет значение переменной)
+                        variable.OnWriteValue = (ISystemContext context, NodeState node, NumericRange indexRange, QualifiedName dataEncoding, ref object value, ref StatusCode statusCode, ref DateTime timestamp) =>
+                        {
+                            Console.WriteLine($"[Pipette Remote Control]: Variable '{node.BrowseName.Name}' updated to '{value}' by client.");
+                            return StatusCodes.Good;
+                        };
+                    }
+
                     parent.AddChild(variable);
                     AddPredefinedNode(SystemContext, variable);
                     return variable;
@@ -84,7 +96,7 @@ namespace OpcUa.Lads.Foundation.Server
                 AddPredefinedNode(SystemContext, channelComponent);
 
                 CreateVariable(channelComponent, "ChannelId", DataTypeIds.UInt16, (ushort)1);
-                CreateVariable(channelComponent, "CurrentVolumeSetting", DataTypeIds.Double, 5.0);
+                CreateVariable(channelComponent, "CurrentVolumeSetting", DataTypeIds.Double, 5.0, true);
                 CreateVariable(channelComponent, "TipPresent", DataTypeIds.Boolean, false);
 
                 // 3. Дочерний объект: BatteryComponent
@@ -112,9 +124,9 @@ namespace OpcUa.Lads.Foundation.Server
                 pipetteDevice.AddChild(pipettingFunction);
                 AddPredefinedNode(SystemContext, pipettingFunction);
 
-                CreateVariable(pipettingFunction, "TargetVolume", DataTypeIds.Double, 5.0);
-                CreateVariable(pipettingFunction, "Mode", DataTypeIds.String, "Aspirate");
-                CreateVariable(pipettingFunction, "Speed", DataTypeIds.UInt16, (ushort)50);
+                CreateVariable(pipettingFunction, "TargetVolume", DataTypeIds.Double, 5.0, true);
+                CreateVariable(pipettingFunction, "Mode", DataTypeIds.String, "Aspirate", true);
+                CreateVariable(pipettingFunction, "Speed", DataTypeIds.UInt16, (ushort)50, true);
                 CreateVariable(pipettingFunction, "PipettingState", DataTypeIds.String, "Idle");
                 CreateVariable(pipettingFunction, "Progress", DataTypeIds.UInt16, (ushort)0);
 
@@ -126,6 +138,7 @@ namespace OpcUa.Lads.Foundation.Server
                         NodeId = new NodeId(parent.NodeId.Identifier + "_" + methodName, ns),
                         BrowseName = new QualifiedName(methodName, ns),
                         DisplayName = new LocalizedText(methodName),
+                        ReferenceTypeId = ReferenceTypeIds.HasComponent,
                         Executable = true,
                         UserExecutable = true,
                         // Подвязываем реализацию делегата:
@@ -146,10 +159,12 @@ namespace OpcUa.Lads.Foundation.Server
             }
         }
 
-        // Реализация (заглушка) исполняемых методов
+        // Реализация исполняемых методов (RPC из UaExpert)
         private ServiceResult Method_OnCall(ISystemContext context, MethodState method, IList<object> inputArguments, IList<object> outputArguments)
         {
-            Console.WriteLine($"[Pipette] Method '{method.BrowseName.Name}' called/executed!");
+            Console.WriteLine("Button Pressed");
+            // Дополнительный красивый вывод с названием метода
+            Console.WriteLine($"[Pipette Remote Control]: Execute Command => '{method.BrowseName.Name}'");
             return StatusCodes.Good;
         }
     }
