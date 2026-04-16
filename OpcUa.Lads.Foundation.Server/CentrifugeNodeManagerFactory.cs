@@ -134,7 +134,7 @@ namespace OpcUa.Lads.Foundation.Server
 
             if (method.BrowseName.Name == "StartSpinning")
             {
-                //StartSpinningTask();
+                StartSpinningTask();
             }
             else if (method.BrowseName.Name == "StopSpinning")
             {
@@ -146,7 +146,28 @@ namespace OpcUa.Lads.Foundation.Server
             return StatusCodes.Good;
         }
 
+        private void StartSpinningTask()
+        {
+            _spinningCts?.Cancel();
+            _spinningCts = new CancellationTokenSource();
+            var token = _spinningCts.Token;
+            
+            Task.Run(async () =>
+            {
+                try
+                {
+                    while (!token.IsCancellationRequested)
+                    {
+                        Console.WriteLine("[Centrifuge]: Spinning...");
+                        await Task.Delay(1000, token); // Имитируем работу центрифуги (каждую секунду выводим статус)
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    // Задача была отменена токеном
+                } 
+            }, token);
+        }
     }
-
 }
 
