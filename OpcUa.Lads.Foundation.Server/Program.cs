@@ -15,7 +15,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 // 3. Загружаем и валидируем настройки сервера, порты и сертификаты безопасности
-Configure("testPipette", 62451);
+Configure("LabWorkflow", 62451);
 
 Log.Information("Starting OPC-UA server (press enter to stop)");
 // 4. Запускаем сервер: инициализируем NodeManager-ы, открываем порт и ждем клиентов
@@ -115,6 +115,7 @@ void Start()
     // NodeManager — это "менеджер адресного пространства". Мы передаем ему нашу фабрику (PipetteNodeManagerFactory).
     // Из-за этого при старте сервер вызовет метод CreateAddressSpace, распарсит Pipette.xml и опубликует пипетку в сеть.
     server.AddNodeManager(new PipetteNodeManagerFactory());
+    server.AddNodeManager(new CentrifugeNodeManagerFactory());
     
     // Запуск сервера. В этот момент открываются сетевые TCP сокеты.
     try
