@@ -41,6 +41,36 @@
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5001</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=4;i=1023</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=5039</Reference>
         </References>
     </UAObject>
+
+    <UAObject NodeId="ns=5;i=5039" BrowseName="5:CentrifugeUnit" ParentNodeId="ns=5;i=5024">
+        <DisplayName>CentrifugeUnit</DisplayName>
+        <Description>The FunctionalUnitType represents a functional unit of a laboratory or analytical device.</Description>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5024</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1003</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=5047</Reference>
+        </References>
+    </UAObject>
+
+    <UAObject NodeId="ns=5;i=5047" BrowseName="4:FunctionalUnitState" ParentNodeId="ns=5;i=5039">
+        <DisplayName>FunctionalUnitState</DisplayName>
+        <Description>FunctionalUnitState provides the state-machine of the FunctionalUnit.</Description>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5039</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1043</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=6143</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=7017</Reference>
+        </References>
+    </UAObject>
+    
+    <UAMethod NodeId="ns=5;i=7017" BrowseName="4:StartProgram" ParentNodeId="ns=5;i=5047">
+        <DisplayName>StartProgram</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5047</Reference>
+        </References>
+    </UAMethod>
+    
 </UANodeSet>
