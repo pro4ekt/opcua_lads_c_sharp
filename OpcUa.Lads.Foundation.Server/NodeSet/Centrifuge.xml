@@ -8,10 +8,10 @@
            xmlns:s4="http://opcfoundation.org/UA/LADS/Types.xsd"
            xmlns:s5="http://opcfoundation.org/UA/AMB/Types.xsd">
     <NamespaceUris>
-        <Uri>http://opcfoundation.org/UA/Machinery/</Uri>
         <Uri>http://opcfoundation.org/UA/DI/</Uri>
-        <Uri>http://opcfoundation.org/UA/LADS/</Uri>
         <Uri>http://opcfoundation.org/UA/AMB/</Uri>
+        <Uri>http://opcfoundation.org/UA/Machinery/</Uri>
+        <Uri>http://opcfoundation.org/UA/LADS/</Uri>
         <Uri>http://lab.server/Centrifuge/</Uri>
     </NamespaceUris>
     <Aliases>
@@ -26,11 +26,11 @@
         <Alias Alias="BaseDataVariableType">i=63</Alias>
     </Aliases>
     <!-- 1. Корневой объект: Centrifuge -->
-    <UAObject NodeId="ns=5;s=Centrifuge" BrowseName="5:Centrifuge" ParentNodeId="ns=2;i=5001">
+    <UAObject NodeId="ns=5;i=5001" BrowseName="5:Centrifuge" ParentNodeId="ns=1;i=5001">
         <DisplayName>Centrifuge</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=2;i=5001</Reference> <!-- DeviceSet -->
-            <Reference ReferenceType="HasTypeDefinition">ns=3;i=1002</Reference> <!-- LADSDeviceType -->
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5001</Reference> <!-- DeviceSet -->
+            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1002</Reference> <!-- LADSDeviceType -->
         </References>
     </UAObject>
 </UANodeSet>
