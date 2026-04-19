@@ -31,6 +31,16 @@
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5001</Reference> <!-- DeviceSet -->
             <Reference ReferenceType="HasTypeDefinition">ns=4;i=1002</Reference> <!-- LADSDeviceType -->
+            <Reference ReferenceType="HasComponent">ns=5;i=5024</Reference>
+        </References>
+    </UAObject>
+
+    <UAObject NodeId="ns=5;i=5024" BrowseName="4:FunctionalUnitSet" ParentNodeId="ns=5;i=5001">
+        <DisplayName>FunctionalUnitSet</DisplayName>
+        <Description>The FunctionalUnitSetType provides a set of a FunctionalUnit objects.</Description>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5001</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1023</Reference>
         </References>
     </UAObject>
 </UANodeSet>
