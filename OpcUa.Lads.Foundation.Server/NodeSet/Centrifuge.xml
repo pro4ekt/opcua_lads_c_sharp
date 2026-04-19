@@ -1,12 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<UANodeSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<UANodeSet LastModified="2023-12-07T11:00:21.090Z" 
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+           xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd" 
            xmlns:uax="http://opcfoundation.org/UA/2008/02/Types.xsd"
-           xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd"
-           xmlns:s1="http://lab.server/Centrifuge/Types.xsd"
-           xmlns:s2="http://opcfoundation.org/UA/Machinery/Types.xsd"
-           xmlns:s3="http://opcfoundation.org/UA/DI/Types.xsd"
-           xmlns:s4="http://opcfoundation.org/UA/LADS/Types.xsd"
-           xmlns:s5="http://opcfoundation.org/UA/AMB/Types.xsd">
+           xmlns:si="http://www.siemens.com/OPCUA/2017/SimaticNodeSetExtensions" 
+           xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+           xmlns:s1="http://opcfoundation.org/UA/Machinery/Types.xsd"
+           xmlns:s2="http://opcfoundation.org/UA/DI/Types.xsd"
+           xmlns:ua="http://unifiedautomation.com/Configuration/NodeSet.xsd"
+           xmlns:s3="http://opcfoundation.org/UA/Machinery/Types.xsd"
+           xmlns:s4="http://opcfoundation.org/UA/DI/Types.xsd" 
+           xmlns:s5="http://yourorganisation.org/helper/Types.xsd">
     <NamespaceUris>
         <Uri>http://opcfoundation.org/UA/DI/</Uri>
         <Uri>http://opcfoundation.org/UA/AMB/</Uri>
@@ -14,6 +18,15 @@
         <Uri>http://opcfoundation.org/UA/LADS/</Uri>
         <Uri>http://lab.server/Centrifuge/</Uri>
     </NamespaceUris>
+    <Models>
+        <Model ModelUri="http://lab.server/Centrifuge/" PublicationDate="2023-03-20T00:00:00Z" Version="1.00">
+            <RequiredModel ModelUri="http://opcfoundation.org/UA/" PublicationDate="2022-11-01T00:00:00Z" Version="1.05.02"/>
+            <RequiredModel ModelUri="http://opcfoundation.org/UA/DI/" PublicationDate="2022-11-03T00:00:00Z" Version="1.04.0"/>
+            <RequiredModel ModelUri="http://opcfoundation.org/UA/AMB/" PublicationDate="2022-11-01T00:00:00Z" Version="1.01.0"/>
+            <RequiredModel ModelUri="http://opcfoundation.org/UA/Machinery/" PublicationDate="2023-08-01T00:00:00Z" Version="1.03.0"/>
+            <RequiredModel ModelUri="http://opcfoundation.org/UA/LADS/" PublicationDate="2023-11-30T00:00:00Z" Version="1.0.0"/>
+        </Model>
+    </Models>
     <Aliases>
         <Alias Alias="Boolean">i=1</Alias>
         <Alias Alias="Byte">i=3</Alias>
@@ -65,17 +78,13 @@
         </References>
     </UAObjectType>
     
-    <UAObject NodeId="ns=5;i=5011" BrowseName="5:CentrifugeDevice" ParentNodeId="ns=5;i=5001">
+    <UAObject NodeId="ns=5;i=5011" BrowseName="5:CentrifugeDevice" ParentNodeId="ns=1;i=5001">
         <DisplayName>CentrifugeDevice</DisplayName>
         <References>
             <!-- БЫЛО: IsForward="false" к ns=1;i=5001 -->
             <!-- НОВЫЙ КОД: Заменили на ns=5;i=5001, потому что теперь папой является сам объект Centrifuge -->
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=3;i=5001</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5001</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=5;i=1001</Reference>
-            <!-- НОВЫЙ КОД: Добавлена прямая ссылка на Identification (5016) -->
-            <Reference ReferenceType="HasAddIn">ns=5;i=5016</Reference>
-             <!-- НОВЫЙ КОД: Добавлена прямая ссылка на AssetId (6018) -->
-            <Reference ReferenceType="HasProperty">ns=5;i=6018</Reference>
         </References>
     </UAObject>
     
@@ -131,10 +140,7 @@
         <Description>Identification provides properties to identify a device or component.</Description>
         <References>
             <Reference ReferenceType="HasAddIn" IsForward="false">ns=5;i=5011</Reference>
-            <!-- БЫЛО: HasTypeDefinition ns=3;i=1012 (из DI) -->
-            <!-- НОВЫЙ КОД: HasTypeDefinition ns=2;i=1012 (из Machinery), потому что Identification лежит в Machinery -->
             <Reference ReferenceType="HasTypeDefinition">ns=3;i=1012</Reference>
-            <!-- НОВЫЙ КОД: Добавлена прямая ссылка на AssetId (6018) -->
             <Reference ReferenceType="HasProperty">ns=5;i=6018</Reference>
         </References>
     </UAObject>
