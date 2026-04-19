@@ -2,10 +2,19 @@
 
 <UANodeSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xmlns:uax="http://opcfoundation.org/UA/2008/02/Types.xsd"
-           xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd">
+           xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd"
+           xmlns:s1="http://lab.server/Centrifuge/Types.xsd"
+           xmlns:s2="http://opcfoundation.org/UA/Machinery/Types.xsd"
+           xmlns:s3="http://opcfoundation.org/UA/DI/Types.xsd"
+           xmlns:s4="http://opcfoundation.org/UA/LADS/Types.xsd"
+           xmlns:s5="http://opcfoundation.org/UA/AMB/Types.xsd">
 
     <NamespaceUris>
         <Uri>http://lab.server/Centrifuge/</Uri>
+        <Uri>http://opcfoundation.org/UA/Machinery/</Uri>
+        <Uri>http://opcfoundation.org/UA/DI/</Uri>
+        <Uri>http://opcfoundation.org/UA/LADS/</Uri>
+        <Uri>http://opcfoundation.org/UA/AMB/</Uri>
     </NamespaceUris>
 
     <Aliases>
@@ -21,11 +30,11 @@
     </Aliases>
 
     <!-- 1. Корневой объект: Centrifuge -->
-    <UAObject NodeId="ns=1;s=Centrifuge" BrowseName="1:Centrifuge">
+    <UAObject NodeId="ns=1;s=Centrifuge" BrowseName="1:Centrifuge" ParentNodeId="ns=3;i=5001">
         <DisplayName>Centrifuge</DisplayName>
         <References>
-            <Reference ReferenceType="Organizes" IsForward="false">i=85</Reference> <!-- ObjectsFolder -->
-            <Reference ReferenceType="HasTypeDefinition">FolderType</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=3;i=5001</Reference> <!-- DeviceSet -->
+            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1002</Reference> <!-- LADSDeviceType -->
 
             <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_DeviceComponent</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_BatteryComponent</Reference>
@@ -56,11 +65,11 @@
     </UAVariable>
 
     <!-- 2. Дочерний объект: DeviceComponent -->
-    <UAObject NodeId="ns=1;s=Centrifuge_DeviceComponent" BrowseName="1:DeviceComponent">
-        <DisplayName>DeviceComponent</DisplayName>
+    <UAObject NodeId="ns=1;s=Centrifuge_DeviceComponent" BrowseName="4:FunctionalUnitSet">
+        <DisplayName>FunctionalUnitSet</DisplayName>
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Centrifuge</Reference>
-            <Reference ReferenceType="HasTypeDefinition">FolderType</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1023</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_DeviceComponent_DeviceId</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_DeviceComponent_Model</Reference>
 
@@ -95,8 +104,8 @@
     </UAVariable>
 
     <!-- 3. Дочерний объект: BatteryComponent -->
-    <UAObject NodeId="ns=1;s=Centrifuge_BatteryComponent" BrowseName="1:BatteryComponent">
-        <DisplayName>BatteryComponent</DisplayName>
+    <UAObject NodeId="ns=1;s=Centrifuge_BatteryComponent" BrowseName="3:Components">
+        <DisplayName>Components</DisplayName>
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Centrifuge</Reference>
             <Reference ReferenceType="HasTypeDefinition">FolderType</Reference>
@@ -118,14 +127,14 @@
             <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Centrifuge_Functions</Reference>
         </References>
     </UAMethod>
-    
+
     <!-- 4. Дочерний объект: Functions -->
-    <UAObject NodeId="ns=1;s=Centrifuge_Functions" BrowseName="1:Functions">
-        <DisplayName>Functions</DisplayName>
+    <UAObject NodeId="ns=1;s=Centrifuge_Functions" BrowseName="4:FunctionSet">
+        <DisplayName>FunctionSet</DisplayName>
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Centrifuge</Reference>
-            <Reference ReferenceType="HasTypeDefinition">FolderType</Reference>
-            
+            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1026</Reference>
+
             <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_Functions_StartSpinning</Reference>
             <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_Functions_StopSpinning</Reference>
         </References>

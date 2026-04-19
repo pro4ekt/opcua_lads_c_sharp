@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="NodeSet\LuminescenceReader.xml" />
+    <EmbeddedResource Include="NodeSet\Centrifuge.xml" />
     <EmbeddedResource Include="NodeSet\Opc.Ua.AMB.NodeSet2.xml" />
     <EmbeddedResource Include="NodeSet\Opc.Ua.DI.NodeSet2.xml" />
     <EmbeddedResource Include="NodeSet\Opc.Ua.LADS.NodeSet2.xml" />

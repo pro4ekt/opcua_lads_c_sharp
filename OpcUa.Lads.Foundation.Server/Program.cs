@@ -93,7 +93,7 @@ void Configure(string applicationName, int port)
     // Валидируем конфигурацию сервера
     configuration.Validate(ApplicationType.Server).Wait();
 
-    // Создаем экземпляр ApplicationInstance. 
+    // Создаем экземпляр ApplicationInstance.
     // Это оболочка, которая отвечает за жизненный цикл OPC UA приложения и управление сертификатами.
     application = new ApplicationInstance(configuration)
     {
@@ -110,15 +110,15 @@ void Start()
 {
     // Создаем ядро OPC UA сервера
     server = new Server();
-    
-    // ДОБАВЛЯЕМ NODE MANAGER. 
+
+    // ДОБАВЛЯЕМ NODE MANAGER.
     // NodeManager — это "менеджер адресного пространства". Мы передаем ему нашу фабрику (PipetteNodeManagerFactory).
     // Из-за этого при старте сервер вызовет метод CreateAddressSpace, распарсит Pipette.xml и опубликует пипетку в сеть.
-   // server.AddNodeManager(new NodeManagerFactory());
-    server.AddNodeManager(new PipetteNodeManagerFactory());
+    //server.AddNodeManager(new NodeManagerFactory());
+    //server.AddNodeManager(new PipetteNodeManagerFactory());
     server.AddNodeManager(new CentrifugeNodeManagerFactory());
-    server.AddNodeManager(new RobotArmManagerFactory());
-    
+    //server.AddNodeManager(new RobotArmManagerFactory());
+
     // Запуск сервера. В этот момент открываются сетевые TCP сокеты.
     try
     {

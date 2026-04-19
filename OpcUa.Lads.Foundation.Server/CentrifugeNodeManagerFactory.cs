@@ -24,30 +24,46 @@ namespace OpcUa.Lads.Foundation.Server
         
         /// <summary>
         /// Конструктор NodeManager-а для нашего устройства. 
-        /// Мы передаем базовому классу пространство имен (URI), за которое он отвечает.
         /// </summary>
         public CentrifugeNodeManager(IServerInternal server, ApplicationConfiguration configuration) 
-            : base(server, configuration, "http://lab.server/Centrifuge/")
+            : base(server, configuration, 
+                "http://opcfoundation.org/UA/DI/",
+                "http://opcfoundation.org/UA/AMB/",
+                "http://opcfoundation.org/UA/Machinery/",
+                "http://opcfoundation.org/UA/LADS/",
+                "http://lab.server/Centrifuge/")
         {
             SystemContext.NodeIdFactory = this; // Говорим контексту, что этот менеджер будет создавать NodeId
+            NamespaceUris =
+            [
+                "http://opcfoundation.org/UA/DI/",
+                "http://opcfoundation.org/UA/AMB/",
+                "http://opcfoundation.org/UA/Machinery/",
+                "http://opcfoundation.org/UA/LADS/",
+                "http://lab.server/Centrifuge/"
+            ];
         }
         
         /// <summary>
         /// Этот метод вызывается ядром сервера при его старте. 
-        /// Здесь мы строим наше адресное пространство: парсим XML, добавляем объекты в память и делаем их видимыми по сети.
         /// </summary>
         public override void CreateAddressSpace(IDictionary<NodeId, IList<IReference>> externalReferences)
         {
             lock (Lock)
             {
-                // Убеждаемся, что в словаре есть базовая папка ObjectsFolder (это "корень" для всех объектов на сервере).
+                // Убеждаемся, что в словаре есть базовая папка ObjectsFolder
                 if (!externalReferences.TryGetValue(ObjectIds.ObjectsFolder, out IList<IReference> references))
                 {
                     externalReferences[ObjectIds.ObjectsFolder] = references = new List<IReference>();
                 }
 
+                // Импортируем зависимости Opc.Ua (DI -> AMB -> Machinery -> LADS)
+                ImportXmlResource(externalReferences, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.DI.NodeSet2.xml");
+                ImportXmlResource(externalReferences, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.AMB.NodeSet2.xml");
+                ImportXmlResource(externalReferences, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.Machinery.NodeSet2.xml");
+                ImportXmlResource(externalReferences, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.LADS.NodeSet2.xml");
+
                 // 1. Читаем структуру из XML файла (ПАРСИНГ)
-                // Ищем файл Centrifuge.xml по относительному пути (в проекте или рядом с .exe)
                 string nodeSetFilePath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "NodeSet", "Centrifuge.xml");
                 if (!File.Exists(nodeSetFilePath))
                 {
@@ -59,31 +75,82 @@ namespace OpcUa.Lads.Foundation.Server
                 NodeStateCollection predefinedNodes = new NodeStateCollection();
                 using (Stream stream = File.OpenRead(nodeSetFilePath))
                 {
-                    // UANodeSet.Read выполняет физическое чтение XML.
                     UANodeSet nodeSet = UANodeSet.Read(stream);
-                    // Import "разворачивает" XML теги в объекты C# (NodeState) и помещает их в коллекцию
+                    foreach (var nameSpace in nodeSet.NamespaceUris)
+                    {
+                        SystemContext.NamespaceUris.GetIndexOrAppend(nameSpace);
+                    }
                     nodeSet.Import(SystemContext, predefinedNodes);
                 }
 
-                // 2. Добавляем загруженные узлы в наше адресное пространство (ПУБЛИКАЦИЯ В ПАМЯТИ)
-                // Передаем каждый узел внутрь базового менеджера, чтобы он начал их обслуживать
+                var toImportNodes = new List<NodeState>();
                 for (int i = 0; i < predefinedNodes.Count; i++)
                 {
-                    AddPredefinedNode(SystemContext, predefinedNodes[i]);
+                    var node = predefinedNodes[i];
+                    if (node is BaseTypeState state && state.SuperTypeId != null &&
+                        node.NodeId.NamespaceIndex == state.SuperTypeId.NamespaceIndex &&
+                        !PredefinedNodes.ContainsKey(state.SuperTypeId))
+                    {
+                        toImportNodes.Add(node);
+                    }
+                    else
+                    {
+                        AddPredefinedNode(SystemContext, node);
+                    }
+                }
+
+                foreach (var node in toImportNodes)
+                {
+                    AddPredefinedNode(SystemContext, node);
                 }
 
                 // 3. Создаем связь между стандартным корнем сервера (ObjectsFolder) и нашим главным устройством
-                // Иначе клиент просто не "дотянется" до нашего дерева, оно будет висеть в вакууме.
-                ushort ns = NamespaceIndexes[0];
+                ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/Centrifuge/");
                 var rootNodeId = new NodeId("Centrifuge", ns);
                 references.Add(new NodeStateReference(ReferenceTypeIds.Organizes, false, rootNodeId));
 
-                // Создаем обратные ссылки (чтобы от дочерних объектов можно было перейти к родительским)
+                // Создаем обратные ссылки
                 AddReverseReferences(externalReferences);
 
-                // 4. Привязываем C# логику к методам и переменным (БИНДИНГ КОЛЛБЕКОВ)
+                // 4. Привязываем C# логику
                 AttachLogicHandlers();
             }
+        }
+
+        private void ImportXmlResource(IDictionary<NodeId, IList<IReference>> externalReferences, string resourcePath)
+        {
+            using var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(resourcePath);
+            if (stream == null) return;
+            var nodeSet = UANodeSet.Read(stream);
+            foreach (var nameSpace in nodeSet.NamespaceUris)
+            {
+                SystemContext.NamespaceUris.GetIndexOrAppend(nameSpace);
+            }
+
+            var predefinedNodes = new NodeStateCollection();
+            nodeSet.Import(SystemContext, predefinedNodes);
+            
+            var toImportNodes = new List<NodeState>();
+            foreach (var node in predefinedNodes)
+            {
+                if (node is BaseTypeState state && state.SuperTypeId != null &&
+                    node.NodeId.NamespaceIndex == state.SuperTypeId.NamespaceIndex &&
+                    !PredefinedNodes.ContainsKey(state.SuperTypeId))
+                {
+                    toImportNodes.Add(node);
+                }
+                else
+                {
+                    AddPredefinedNode(SystemContext, node);
+                }
+            }
+
+            foreach (var node in toImportNodes)
+            {
+                AddPredefinedNode(SystemContext, node);
+            }
+
+            AddReverseReferences(externalReferences);
         }
         
         /// <summary>
@@ -103,7 +170,7 @@ namespace OpcUa.Lads.Foundation.Server
         /// </summary>
         private void AttachLogicHandlers()
         {
-            ushort ns = NamespaceIndexes[0];
+            ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/Centrifuge/");
 
            /*  // Находим метод ConfigurePipetting по его NodeId (из XML) и привязываем C# делегат
             if (FindPredefinedNode(new NodeId("PipetteDevice_PipettingFunction_ConfigurePipetting", ns), typeof(MethodState)) is MethodState configureMethod)
@@ -170,4 +237,3 @@ namespace OpcUa.Lads.Foundation.Server
         }
     }
 }
-
