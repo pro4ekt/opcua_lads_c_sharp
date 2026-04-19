@@ -8,11 +8,11 @@
            xmlns:s4="http://opcfoundation.org/UA/LADS/Types.xsd"
            xmlns:s5="http://opcfoundation.org/UA/AMB/Types.xsd">
     <NamespaceUris>
-        <Uri>http://lab.server/Centrifuge/</Uri>
         <Uri>http://opcfoundation.org/UA/Machinery/</Uri>
         <Uri>http://opcfoundation.org/UA/DI/</Uri>
         <Uri>http://opcfoundation.org/UA/LADS/</Uri>
         <Uri>http://opcfoundation.org/UA/AMB/</Uri>
+        <Uri>http://lab.server/Centrifuge/</Uri>
     </NamespaceUris>
     <Aliases>
         <Alias Alias="Boolean">i=1</Alias>
@@ -26,103 +26,11 @@
         <Alias Alias="BaseDataVariableType">i=63</Alias>
     </Aliases>
     <!-- 1. Корневой объект: Centrifuge -->
-    <UAObject NodeId="ns=1;s=Centrifuge" BrowseName="1:Centrifuge" ParentNodeId="ns=3;i=5001">
+    <UAObject NodeId="ns=5;s=Centrifuge" BrowseName="5:Centrifuge" ParentNodeId="ns=2;i=5001">
         <DisplayName>Centrifuge</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=3;i=5001</Reference> <!-- DeviceSet -->
-            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1002</Reference> <!-- LADSDeviceType -->
-            <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_DeviceComponent</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_BatteryComponent</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_Functions</Reference>
-        </References>
-    </UAObject>
-    <!-- Переменные для Device -->
-    <UAVariable NodeId="ns=1;s=Centrifuge_DeviceComponent_DeviceId" BrowseName="1:DeviceId" DataType="String" AccessLevel="1" UserAccessLevel="1">
-        <DisplayName>DeviceId</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Centrifuge_DeviceComponent</Reference>
-            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
-        </References>
-        <Value>
-            <uax:String>CEN-001</uax:String>
-        </Value>
-    </UAVariable>
-    <UAVariable NodeId="ns=1;s=Centrifuge_DeviceComponent_Model" BrowseName="1:Model" DataType="String" AccessLevel="1" UserAccessLevel="1">
-        <DisplayName>Model</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Centrifuge_DeviceComponent</Reference>
-            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
-        </References>
-        <Value>
-            <uax:String>LADS-Centrifuge-V1</uax:String>
-        </Value>
-    </UAVariable>
-    <!-- 2. Дочерний объект: DeviceComponent -->
-    <UAObject NodeId="ns=1;s=Centrifuge_DeviceComponent" BrowseName="4:FunctionalUnitSet">
-        <DisplayName>FunctionalUnitSet</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Centrifuge</Reference>
-            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1023</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_DeviceComponent_DeviceId</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_DeviceComponent_Model</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_DeviceComponent_MinVolume</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_DeviceComponent_MaxVolume</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_DeviceComponent_CurrentVolume</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_DeviceComponent_TipPresent</Reference>
-        </References>
-    </UAObject>
-    <!-- Переменные для Battery -->
-    <UAVariable NodeId="ns=1;s=Centrifuge_BatteryComponent_BatteryLevel" BrowseName="1:BatteryLevel" DataType="UInt16" AccessLevel="1" UserAccessLevel="1">
-        <DisplayName>BatteryLevel</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Centrifuge_BatteryComponent</Reference>
-            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
-        </References>
-        <Value>
-            <uax:UInt16>100</uax:UInt16>
-        </Value>
-    </UAVariable>
-    <UAVariable NodeId="ns=1;s=Centrifuge_BatteryComponent_Charging" BrowseName="1:Charging" DataType="Boolean" AccessLevel="1" UserAccessLevel="1">
-        <DisplayName>Charging</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Centrifuge_BatteryComponent</Reference>
-            <Reference ReferenceType="HasTypeDefinition">BaseDataVariableType</Reference>
-        </References>
-        <Value>
-            <uax:Boolean>false</uax:Boolean>
-        </Value>
-    </UAVariable>
-    <!-- 3. Дочерний объект: BatteryComponent -->
-    <UAObject NodeId="ns=1;s=Centrifuge_BatteryComponent" BrowseName="3:Components">
-        <DisplayName>Components</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Centrifuge</Reference>
-            <Reference ReferenceType="HasTypeDefinition">FolderType</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_BatteryComponent_BatteryLevel</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_BatteryComponent_Charging</Reference>
-        </References>
-    </UAObject>
-    <!-- Методы RPC (Executable="true") -->
-    <UAMethod NodeId="ns=1;s=Centrifuge_Functions_StartSpinning" BrowseName="1:StartSpinning">
-        <DisplayName>StartSpinning</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Centrifuge_Functions</Reference>
-        </References>
-    </UAMethod>
-    <UAMethod NodeId="ns=1;s=Centrifuge_Functions_StopSpinning" BrowseName="1:StopSpinning">
-        <DisplayName>StopSpinning</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Centrifuge_Functions</Reference>
-        </References>
-    </UAMethod>
-    <!-- 4. Дочерний объект: Functions -->
-    <UAObject NodeId="ns=1;s=Centrifuge_Functions" BrowseName="4:FunctionSet">
-        <DisplayName>FunctionSet</DisplayName>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s=Centrifuge</Reference>
-            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1026</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_Functions_StartSpinning</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;s=Centrifuge_Functions_StopSpinning</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=2;i=5001</Reference> <!-- DeviceSet -->
+            <Reference ReferenceType="HasTypeDefinition">ns=3;i=1002</Reference> <!-- LADSDeviceType -->
         </References>
     </UAObject>
 </UANodeSet>
