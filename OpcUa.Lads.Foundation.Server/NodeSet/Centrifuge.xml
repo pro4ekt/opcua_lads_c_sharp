@@ -50,7 +50,32 @@
         <DisplayName>Centrifuge</DisplayName>
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5001</Reference> <!-- DeviceSet -->
+            <!-- НОВЫЙ КОД: Добавлена ссылка от 5001 (Centrifuge) к 5011 (CentrifugeDevice), чтобы 5011 не "висел в воздухе" -->
+            <Reference ReferenceType="HasComponent">ns=5;i=5011</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=4;i=1002</Reference> <!-- LADSDeviceType -->
+            <Reference ReferenceType="HasComponent">ns=5;i=5024</Reference>
+        </References>
+    </UAObject>
+
+    <UAObjectType NodeId="ns=5;i=1001" BrowseName="5:CentrifugeDeviceType">
+        <DisplayName>CentrifugeDeviceType</DisplayName>
+        <Description>The LADSDeviceType provides a base class for laboratory- and analytical devices.</Description>
+        <References>
+            <Reference ReferenceType="HasSubtype" IsForward="false">ns=4;i=1002</Reference>
+        </References>
+    </UAObjectType>
+    
+    <UAObject NodeId="ns=5;i=5011" BrowseName="5:CentrifugeDevice" ParentNodeId="ns=5;i=5001">
+        <DisplayName>CentrifugeDevice</DisplayName>
+        <References>
+            <!-- БЫЛО: IsForward="false" к ns=1;i=5001 -->
+            <!-- НОВЫЙ КОД: Заменили на ns=5;i=5001, потому что теперь папой является сам объект Centrifuge -->
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=3;i=5001</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=5;i=1001</Reference>
+            <!-- НОВЫЙ КОД: Добавлена прямая ссылка на Identification (5016) -->
+            <Reference ReferenceType="HasAddIn">ns=5;i=5016</Reference>
+             <!-- НОВЫЙ КОД: Добавлена прямая ссылка на AssetId (6018) -->
+            <Reference ReferenceType="HasProperty">ns=5;i=6018</Reference>
         </References>
     </UAObject>
     
@@ -100,5 +125,28 @@
             <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5047</Reference>
         </References>
     </UAMethod>
+
+    <UAObject NodeId="ns=5;i=5016" BrowseName="1:Identification" ParentNodeId="ns=5;i=5011">
+        <DisplayName>Identification</DisplayName>
+        <Description>Identification provides properties to identify a device or component.</Description>
+        <References>
+            <Reference ReferenceType="HasAddIn" IsForward="false">ns=5;i=5011</Reference>
+            <!-- БЫЛО: HasTypeDefinition ns=3;i=1012 (из DI) -->
+            <!-- НОВЫЙ КОД: HasTypeDefinition ns=2;i=1012 (из Machinery), потому что Identification лежит в Machinery -->
+            <Reference ReferenceType="HasTypeDefinition">ns=3;i=1012</Reference>
+            <!-- НОВЫЙ КОД: Добавлена прямая ссылка на AssetId (6018) -->
+            <Reference ReferenceType="HasProperty">ns=5;i=6018</Reference>
+        </References>
+    </UAObject>
+    
+    <UAVariable DataType="String" NodeId="ns=5;i=6018" BrowseName="1:AssetId" ParentNodeId="ns=5;i=5016" UserAccessLevel="3" AccessLevel="3">
+        <DisplayName>AssetId</DisplayName>
+        <Description>AssetId is a user writable alphanumeric character sequence uniquely identifying a component. The ID is provided by the integrator or user of the device.</Description>
+        <References>
+            <Reference ReferenceType="HasProperty" IsForward="false">ns=5;i=5011</Reference>
+            <Reference ReferenceType="HasProperty" IsForward="false">ns=5;i=5016</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
     
 </UANodeSet>
