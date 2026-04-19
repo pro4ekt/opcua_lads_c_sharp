@@ -55,14 +55,21 @@
         </References>
     </UAObject>
 
+    <UAObject NodeId="ns=5;i=5045" BrowseName="4:FunctionSet" ParentNodeId="ns=5;i=5039">
+        <DisplayName>FunctionSet</DisplayName>
+        <Description>The FunctionSetType is used for organising FunctionType objects in an unordered list structure.</Description>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5039</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1026</Reference>
+        </References>
+    </UAObject>
+    
     <UAObject NodeId="ns=5;i=5047" BrowseName="4:FunctionalUnitState" ParentNodeId="ns=5;i=5039">
         <DisplayName>FunctionalUnitState</DisplayName>
         <Description>FunctionalUnitState provides the state-machine of the FunctionalUnit.</Description>
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5039</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=4;i=1043</Reference>
-            <Reference ReferenceType="HasComponent">ns=5;i=6143</Reference>
-            <Reference ReferenceType="HasComponent">ns=5;i=7017</Reference>
         </References>
     </UAObject>
     
