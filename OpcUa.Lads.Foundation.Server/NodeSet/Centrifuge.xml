@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<UANodeSet LastModified="2023-12-07T11:00:21.090Z" 
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-           xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd" 
+<UANodeSet LastModified="2023-12-07T11:00:21.090Z"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd"
            xmlns:uax="http://opcfoundation.org/UA/2008/02/Types.xsd"
-           xmlns:si="http://www.siemens.com/OPCUA/2017/SimaticNodeSetExtensions" 
-           xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+           xmlns:si="http://www.siemens.com/OPCUA/2017/SimaticNodeSetExtensions"
+           xmlns:xsd="http://www.w3.org/2001/XMLSchema"
            xmlns:s1="http://opcfoundation.org/UA/Machinery/Types.xsd"
            xmlns:s2="http://opcfoundation.org/UA/DI/Types.xsd"
            xmlns:ua="http://unifiedautomation.com/Configuration/NodeSet.xsd"
            xmlns:s3="http://opcfoundation.org/UA/Machinery/Types.xsd"
-           xmlns:s4="http://opcfoundation.org/UA/DI/Types.xsd" 
+           xmlns:s4="http://opcfoundation.org/UA/DI/Types.xsd"
            xmlns:s5="http://yourorganisation.org/helper/Types.xsd">
     <NamespaceUris>
         <Uri>http://opcfoundation.org/UA/DI/</Uri>
@@ -57,7 +57,7 @@
         <Alias Alias="SampleInfoType">ns=4;i=3002</Alias>
         <Alias Alias="KeyValueType">ns=4;i=3003</Alias>
     </Aliases>
-    
+
     <!-- 1. Корневой объект: CentrifugeDevice -->
     <UAObject NodeId="ns=5;i=5011" BrowseName="5:CentrifugeDeviceSet" ParentNodeId="ns=1;i=5001">
         <DisplayName>CentrifugeDevice</DisplayName>
@@ -76,7 +76,7 @@
             <Reference ReferenceType="HasSubtype" IsForward="false">ns=4;i=1002</Reference>
         </References>
     </UAObjectType>
-    
+
     <UAObject NodeId="ns=5;i=5024" BrowseName="4:FunctionalUnitSet" ParentNodeId="ns=5;i=5011">
         <DisplayName>FunctionalUnitSet</DisplayName>
         <Description>The FunctionalUnitSetType provides a set of a FunctionalUnit objects.</Description>
@@ -106,7 +106,7 @@
             <Reference ReferenceType="HasTypeDefinition">ns=4;i=1026</Reference>
         </References>
     </UAObject>
-    
+
     <UAObject NodeId="ns=5;i=5047" BrowseName="4:FunctionalUnitState" ParentNodeId="ns=5;i=5039">
         <DisplayName>FunctionalUnitState</DisplayName>
         <Description>FunctionalUnitState provides the state-machine of the FunctionalUnit.</Description>
@@ -116,7 +116,7 @@
             <Reference ReferenceType="HasComponent">ns=5;i=7017</Reference>
         </References>
     </UAObject>
-    
+
     <UAMethod NodeId="ns=5;i=7017" BrowseName="4:StartProgram" ParentNodeId="ns=5;i=5047">
         <DisplayName>StartProgram</DisplayName>
         <References>
@@ -133,7 +133,7 @@
             <Reference ReferenceType="HasProperty">ns=5;i=6018</Reference>
         </References>
     </UAObject>
-    
+
     <UAVariable DataType="String" NodeId="ns=5;i=6018" BrowseName="1:AssetId" ParentNodeId="ns=5;i=5016" UserAccessLevel="3" AccessLevel="3">
         <DisplayName>AssetId</DisplayName>
         <Description>AssetId is a user writable alphanumeric character sequence uniquely identifying a component. The ID is provided by the integrator or user of the device.</Description>
@@ -143,5 +143,5 @@
             <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
         </References>
     </UAVariable>
-    
+
 </UANodeSet>

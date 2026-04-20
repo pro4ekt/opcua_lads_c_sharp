@@ -19,6 +19,8 @@ namespace OpcUa.Lads.Foundation.Server
 
     public class CentrifugeNodeManager : CustomNodeManager2
     {
+        public Action OnStartProgramCalled { get; set; }
+        
         // Добавляем поля для хранения ссылок на узлы переменных и токен отмены задачи
         private CancellationTokenSource _spinningCts;
         
@@ -159,7 +161,6 @@ namespace OpcUa.Lads.Foundation.Server
         private ServiceResult OnVariableWrite(ISystemContext context, NodeState node, NumericRange indexRange, QualifiedName dataEncoding, ref object value, ref StatusCode statusCode, ref DateTime timestamp)
         {
             Console.WriteLine($"[Centrifuge Remote Control]: Variable '{node.BrowseName.Name}' updated to '{value}' by client.");
-            // Тут можно передать команду на "железо", чтобы пипетка сменила скорость
             return StatusCodes.Good; // Подтверждаем клиенту, что запись прошла успешно
         }
         
@@ -172,23 +173,16 @@ namespace OpcUa.Lads.Foundation.Server
         {
             ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/Centrifuge/");
 
-           /*  // Находим метод ConfigurePipetting по его NodeId (из XML) и привязываем C# делегат
-            if (FindPredefinedNode(new NodeId("PipetteDevice_PipettingFunction_ConfigurePipetting", ns), typeof(MethodState)) is MethodState configureMethod)
-            {
-                configureMethod.OnCallMethod = Method_OnCall;
-            }
-            */
-
-            // Находим метод StartSpinning
-            if (FindPredefinedNode(new NodeId("Centrifuge_Functions_StartSpinning", ns), typeof(MethodState)) is MethodState startMethod)
+            // Находим метод StartProgram (в XML это i=7017)
+            if (FindPredefinedNode(new NodeId(7017u, ns), typeof(MethodState)) is MethodState startMethod)
             {
                 startMethod.OnCallMethod = Method_OnCall;
             }
 
-            // Находим StopSpinning
-            if (FindPredefinedNode(new NodeId("Centrifuge_Functions_StopSpinning", ns), typeof(MethodState)) is MethodState abortMethod)
+            // Привязываем коллбек на изменение переменной AssetId (в XML это i=6018)
+            if (FindPredefinedNode(new NodeId(6018u, ns), typeof(BaseVariableState)) is BaseVariableState assetIdVar)
             {
-                abortMethod.OnCallMethod = Method_OnCall;
+                assetIdVar.OnWriteValue = new NodeValueEventHandler(OnVariableWrite);
             }
         }
         
@@ -199,11 +193,12 @@ namespace OpcUa.Lads.Foundation.Server
         {
             Console.WriteLine($"[Centrifuge Remote Control]: Execute Command => '{method.BrowseName.Name}'");
 
-            if (method.BrowseName.Name == "StartSpinning")
+            if (method.BrowseName.Name == "StartProgram")
             {
+                OnStartProgramCalled?.Invoke();
                 StartSpinningTask();
             }
-            else if (method.BrowseName.Name == "StopSpinning")
+            else if (method.BrowseName.Name == "StopProgram")
             {
                 // Останавливаем фоновый процесс, если нажали Abort
                 _spinningCts?.Cancel();
