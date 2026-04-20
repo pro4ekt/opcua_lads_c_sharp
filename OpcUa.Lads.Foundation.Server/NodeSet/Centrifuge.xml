@@ -58,15 +58,14 @@
         <Alias Alias="KeyValueType">ns=4;i=3003</Alias>
     </Aliases>
     
-    <!-- 1. Корневой объект: Centrifuge -->
-    <UAObject NodeId="ns=5;i=5001" BrowseName="5:Centrifuge" ParentNodeId="ns=1;i=5001">
-        <DisplayName>Centrifuge</DisplayName>
+    <!-- 1. Корневой объект: CentrifugeDevice -->
+    <UAObject NodeId="ns=5;i=5011" BrowseName="5:CentrifugeDeviceSet" ParentNodeId="ns=1;i=5001">
+        <DisplayName>CentrifugeDevice</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5001</Reference> <!-- DeviceSet -->
-            <!-- НОВЫЙ КОД: Добавлена ссылка от 5001 (Centrifuge) к 5011 (CentrifugeDevice), чтобы 5011 не "висел в воздухе" -->
-            <Reference ReferenceType="HasComponent">ns=5;i=5011</Reference>
-            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1002</Reference> <!-- LADSDeviceType -->
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5001</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=5;i=1001</Reference>
             <Reference ReferenceType="HasComponent">ns=5;i=5024</Reference>
+            <Reference ReferenceType="HasProperty">ns=5;i=5016</Reference>
         </References>
     </UAObject>
 
@@ -78,21 +77,11 @@
         </References>
     </UAObjectType>
     
-    <UAObject NodeId="ns=5;i=5011" BrowseName="5:CentrifugeDevice" ParentNodeId="ns=1;i=5001">
-        <DisplayName>CentrifugeDevice</DisplayName>
-        <References>
-            <!-- БЫЛО: IsForward="false" к ns=1;i=5001 -->
-            <!-- НОВЫЙ КОД: Заменили на ns=5;i=5001, потому что теперь папой является сам объект Centrifuge -->
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5001</Reference>
-            <Reference ReferenceType="HasTypeDefinition">ns=5;i=1001</Reference>
-        </References>
-    </UAObject>
-    
-    <UAObject NodeId="ns=5;i=5024" BrowseName="4:FunctionalUnitSet" ParentNodeId="ns=5;i=5001">
+    <UAObject NodeId="ns=5;i=5024" BrowseName="4:FunctionalUnitSet" ParentNodeId="ns=5;i=5011">
         <DisplayName>FunctionalUnitSet</DisplayName>
         <Description>The FunctionalUnitSetType provides a set of a FunctionalUnit objects.</Description>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5001</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5011</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=4;i=1023</Reference>
             <Reference ReferenceType="HasComponent">ns=5;i=5039</Reference>
         </References>
@@ -139,7 +128,7 @@
         <DisplayName>Identification</DisplayName>
         <Description>Identification provides properties to identify a device or component.</Description>
         <References>
-            <Reference ReferenceType="HasAddIn" IsForward="false">ns=5;i=5011</Reference>
+            <Reference ReferenceType="HasProperty" IsForward="false">ns=5;i=5011</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=3;i=1012</Reference>
             <Reference ReferenceType="HasProperty">ns=5;i=6018</Reference>
         </References>
