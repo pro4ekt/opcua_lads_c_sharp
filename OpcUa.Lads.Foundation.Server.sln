@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpcUa.Lads.Foundation.Serve
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CentrifugeServer", "CentrifugeServer\CentrifugeServer.csproj", "{CDD42BFD-E599-4D97-933B-9B3FE738CE55}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipetteServer", "PipetteServer\PipetteServer.csproj", "{410DB931-42B8-430D-AA1B-D3B565431BCB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RobotArm", "RobotArm\RobotArm.csproj", "{D85FD2D1-F1DE-46FE-8EDA-0F93B3191723}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{CDD42BFD-E599-4D97-933B-9B3FE738CE55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDD42BFD-E599-4D97-933B-9B3FE738CE55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDD42BFD-E599-4D97-933B-9B3FE738CE55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{410DB931-42B8-430D-AA1B-D3B565431BCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{410DB931-42B8-430D-AA1B-D3B565431BCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{410DB931-42B8-430D-AA1B-D3B565431BCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{410DB931-42B8-430D-AA1B-D3B565431BCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D85FD2D1-F1DE-46FE-8EDA-0F93B3191723}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D85FD2D1-F1DE-46FE-8EDA-0F93B3191723}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D85FD2D1-F1DE-46FE-8EDA-0F93B3191723}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D85FD2D1-F1DE-46FE-8EDA-0F93B3191723}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
