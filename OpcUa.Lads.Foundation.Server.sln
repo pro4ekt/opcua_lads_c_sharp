@@ -5,6 +5,8 @@ VisualStudioVersion = 17.10.35004.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpcUa.Lads.Foundation.Server", "OpcUa.Lads.Foundation.Server\OpcUa.Lads.Foundation.Server.csproj", "{75386D62-9FCC-4FF7-AA21-96E9A092DD7D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CentrifugeServer", "CentrifugeServer\CentrifugeServer.csproj", "{CDD42BFD-E599-4D97-933B-9B3FE738CE55}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{75386D62-9FCC-4FF7-AA21-96E9A092DD7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75386D62-9FCC-4FF7-AA21-96E9A092DD7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75386D62-9FCC-4FF7-AA21-96E9A092DD7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDD42BFD-E599-4D97-933B-9B3FE738CE55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDD42BFD-E599-4D97-933B-9B3FE738CE55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDD42BFD-E599-4D97-933B-9B3FE738CE55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDD42BFD-E599-4D97-933B-9B3FE738CE55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -114,9 +114,9 @@ void Start()
     // ДОБАВЛЯЕМ NODE MANAGER.
     // NodeManager — это "менеджер адресного пространства". Мы передаем ему нашу фабрику (PipetteNodeManagerFactory).
     // Из-за этого при старте сервер вызовет метод CreateAddressSpace, распарсит Pipette.xml и опубликует пипетку в сеть.
-    //server.AddNodeManager(new NodeManagerFactory());
+    server.AddNodeManager(new NodeManagerFactory());
     //server.AddNodeManager(new PipetteNodeManagerFactory());
-    server.AddNodeManager(new CentrifugeNodeManagerFactory());
+    //server.AddNodeManager(new CentrifugeNodeManagerFactory());
     //server.AddNodeManager(new RobotArmManagerFactory());
 
     // Запуск сервера. В этот момент открываются сетевые TCP сокеты.

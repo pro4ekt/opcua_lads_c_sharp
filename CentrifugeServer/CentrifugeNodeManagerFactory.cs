@@ -59,70 +59,31 @@ namespace OpcUa.Lads.Foundation.Server
                     externalReferences[ObjectIds.ObjectsFolder] = references = new List<IReference>();
                 }
 
+                // Ассемблея, где лежат базовые xml файлы
+                var foundationAssembly = typeof(OpcUa.Lads.Foundation.Server.NodeManager).Assembly;
+
                 // Импортируем зависимости Opc.Ua (DI -> AMB -> Machinery -> LADS)
-                ImportXmlResource(externalReferences, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.DI.NodeSet2.xml");
-                ImportXmlResource(externalReferences, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.AMB.NodeSet2.xml");
-                ImportXmlResource(externalReferences, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.Machinery.NodeSet2.xml");
-                ImportXmlResource(externalReferences, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.LADS.NodeSet2.xml");
+                ImportXmlResource(externalReferences, foundationAssembly, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.DI.NodeSet2.xml");
+                ImportXmlResource(externalReferences, foundationAssembly, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.AMB.NodeSet2.xml");
+                ImportXmlResource(externalReferences, foundationAssembly, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.Machinery.NodeSet2.xml");
+                ImportXmlResource(externalReferences, foundationAssembly, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.LADS.NodeSet2.xml");
 
-                // 1. Читаем структуру из XML файла (ПАРСИНГ)
-                string nodeSetFilePath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "NodeSet", "Centrifuge.xml");
-                if (!File.Exists(nodeSetFilePath))
-                {
-                    // Попытка найти рядом с exe, если запущено не из студии (после публикации)
-                    nodeSetFilePath = Path.Combine(AppContext.BaseDirectory, "NodeSet", "Centrifuge.xml");
-                }
-
-                // Коллекция для временного хранения объектов, загруженных из файла
-                NodeStateCollection predefinedNodes = new NodeStateCollection();
-                using (Stream stream = File.OpenRead(nodeSetFilePath))
-                {
-                    UANodeSet nodeSet = UANodeSet.Read(stream);
-                    foreach (var nameSpace in nodeSet.NamespaceUris)
-                    {
-                        SystemContext.NamespaceUris.GetIndexOrAppend(nameSpace);
-                    }
-                    nodeSet.Import(SystemContext, predefinedNodes);
-                }
-
-                var toImportNodes = new List<NodeState>();
-                for (int i = 0; i < predefinedNodes.Count; i++)
-                {
-                    var node = predefinedNodes[i];
-                    if (node is BaseTypeState state && state.SuperTypeId != null &&
-                        node.NodeId.NamespaceIndex == state.SuperTypeId.NamespaceIndex &&
-                        !PredefinedNodes.ContainsKey(state.SuperTypeId))
-                    {
-                        toImportNodes.Add(node);
-                    }
-                    else
-                    {
-                        AddPredefinedNode(SystemContext, node);
-                    }
-                }
-
-                foreach (var node in toImportNodes)
-                {
-                    AddPredefinedNode(SystemContext, node);
-                }
-
-                // 3. Создаем связь между стандартным корнем сервера (ObjectsFolder) и нашим главным устройством
-                ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/Centrifuge/");
-                var rootNodeId = new NodeId("Centrifuge", ns);
-                references.Add(new NodeStateReference(ReferenceTypeIds.Organizes, false, rootNodeId));
-
-                // Создаем обратные ссылки
-                AddReverseReferences(externalReferences);
+                // 1. Читаем структуру из XML файла Centrifuge.xml (ПАРСИНГ)
+                var centrifugeAssembly = typeof(CentrifugeNodeManager).Assembly;
+                ImportXmlResource(externalReferences, centrifugeAssembly, "CentrifugeServer.Centrifuge.xml");
 
                 // 4. Привязываем C# логику
                 AttachLogicHandlers();
             }
         }
 
-        private void ImportXmlResource(IDictionary<NodeId, IList<IReference>> externalReferences, string resourcePath)
+        private void ImportXmlResource(IDictionary<NodeId, IList<IReference>> externalReferences, System.Reflection.Assembly assembly, string resourcePath)
         {
-            using var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(resourcePath);
-            if (stream == null) return;
+            using var stream = assembly.GetManifestResourceStream(resourcePath);
+            if (stream == null) 
+            {
+                throw new Exception($"Cannot find embedded resource: {resourcePath} in assembly {assembly.FullName}");
+            }
             var nodeSet = UANodeSet.Read(stream);
             foreach (var nameSpace in nodeSet.NamespaceUris)
             {
