@@ -134,10 +134,16 @@ namespace OpcUa.Lads.Foundation.Server
         {
             ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/Centrifuge/");
 
-            // Находим метод StartProgram (в XML это i=7017)
-            if (FindPredefinedNode(new NodeId(7017u, ns), typeof(MethodState)) is MethodState startMethod)
+            // Находим метод StartSpinning (в XML это i=7017)
+            if (FindPredefinedNode(new NodeId(7017u, ns), typeof(MethodState)) is MethodState startSpinningMethod)
             {
-                startMethod.OnCallMethod = Method_OnCall;
+                startSpinningMethod.OnCallMethod = Method_OnCall;
+            }
+
+            // Находим метод StopSpinning (в XML это i=7018)
+            if (FindPredefinedNode(new NodeId(7018u, ns), typeof(MethodState)) is MethodState stopSpinningMethod)
+            {
+                stopSpinningMethod.OnCallMethod = Method_OnCall;
             }
 
             // Привязываем коллбек на изменение переменной AssetId (в XML это i=6018)
@@ -154,14 +160,14 @@ namespace OpcUa.Lads.Foundation.Server
         {
             Console.WriteLine($"[Centrifuge Remote Control]: Execute Command => '{method.BrowseName.Name}'");
 
-            if (method.BrowseName.Name == "StartProgram")
+            if (method.BrowseName.Name == "StartSpinning")
             {
                 OnStartProgramCalled?.Invoke();
                 StartSpinningTask();
             }
-            else if (method.BrowseName.Name == "StopProgram")
+            else if (method.BrowseName.Name == "StopSpinning")
             {
-                // Останавливаем фоновый процесс, если нажали Abort
+                // Останавливаем фоновый процесс, если вызван StopSpinning
                 _spinningCts?.Cancel();
                 Console.WriteLine("[Centrifuge]: Spinning manually aborted.");
             }
