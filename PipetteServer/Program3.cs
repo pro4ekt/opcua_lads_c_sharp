@@ -15,7 +15,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 // 3. Загружаем и валидируем настройки сервера, порты и сертификаты безопасности
-Configure("LabWorkflow3", 62453);
+Configure("Pipette", 62453);
 
 Log.Information("Starting OPC-UA server (press enter to stop)");
 // 4. Запускаем сервер: инициализируем NodeManager-ы, открываем порт и ждем клиентов

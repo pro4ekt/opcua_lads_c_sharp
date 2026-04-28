@@ -114,11 +114,19 @@
             <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5039</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=4;i=1043</Reference>
             <Reference ReferenceType="HasComponent">ns=5;i=7017</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=7018</Reference>
         </References>
     </UAObject>
 
-    <UAMethod NodeId="ns=5;i=7017" BrowseName="4:StartProgram" ParentNodeId="ns=5;i=5047">
-        <DisplayName>StartProgram</DisplayName>
+    <UAMethod NodeId="ns=5;i=7017" BrowseName="4:StartPipetting" ParentNodeId="ns=5;i=5047">
+        <DisplayName>StartPipetting</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5047</Reference>
+        </References>
+    </UAMethod>
+
+    <UAMethod NodeId="ns=5;i=7018" BrowseName="4:StopPipetting" ParentNodeId="ns=5;i=5047">
+        <DisplayName>StopPipetting</DisplayName>
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5047</Reference>
         </References>

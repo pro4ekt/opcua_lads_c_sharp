@@ -123,10 +123,16 @@ namespace OpcUa.Lads.Foundation.Server
         {
             ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/Pipette/");
 
-            // Находим метод StartProgram (в XML это i=7017)
+            // Находим метод StartPipetting (в XML это i=7017)
             if (FindPredefinedNode(new NodeId(7017u, ns), typeof(MethodState)) is MethodState startMethod)
             {
                 startMethod.OnCallMethod = Method_OnCall;
+            }
+
+            // Находим метод StopPipetting (в XML это i=7018)
+            if (FindPredefinedNode(new NodeId(7018u, ns), typeof(MethodState)) is MethodState stopMethod)
+            {
+                stopMethod.OnCallMethod = Method_OnCall;
             }
 
             // Находим переменную AssetId (в XML это i=6018)
@@ -153,13 +159,13 @@ namespace OpcUa.Lads.Foundation.Server
         {
             Console.WriteLine($"[Pipette Remote Control]: Execute Command => '{method.BrowseName.Name}'");
 
-            if (method.BrowseName.Name == "StartProgram")
+            if (method.BrowseName.Name == "StartPipetting")
             {
                 StartPipettingTask();
             }
-            else if (method.BrowseName.Name == "StopProgram" || method.BrowseName.Name == "AbortPipetting")
+            else if (method.BrowseName.Name == "StopPipetting" || method.BrowseName.Name == "AbortPipetting")
             {
-                // Останавливаем фоновый процесс, если нажали Abort
+                // Останавливаем фоновый процесс, если вызван стоп
                 _pipettingCts?.Cancel();
                 Console.WriteLine("[Pipette]: Pipetting manually aborted.");
             }
