@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CentrifugeServer", "Centrif
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipetteServer", "PipetteServer\PipetteServer.csproj", "{410DB931-42B8-430D-AA1B-D3B565431BCB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RobotArm", "RobotArm\RobotArm.csproj", "{D85FD2D1-F1DE-46FE-8EDA-0F93B3191723}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RobotArmServer", "RobotArmServer\RobotArmServer.csproj", "{D85FD2D1-F1DE-46FE-8EDA-0F93B3191723}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -16,10 +16,10 @@
         <Uri>http://opcfoundation.org/UA/AMB/</Uri>
         <Uri>http://opcfoundation.org/UA/Machinery/</Uri>
         <Uri>http://opcfoundation.org/UA/LADS/</Uri>
-        <Uri>http://lab.server/RobotArm/</Uri>
+        <Uri>http://lab.server/RobotArmServer/</Uri>
     </NamespaceUris>
     <Models>
-        <Model ModelUri="http://lab.server/RobotArm/" PublicationDate="2023-03-20T00:00:00Z" Version="1.00">
+        <Model ModelUri="http://lab.server/RobotArmServer/" PublicationDate="2023-03-20T00:00:00Z" Version="1.00">
             <RequiredModel ModelUri="http://opcfoundation.org/UA/" PublicationDate="2022-11-01T00:00:00Z" Version="1.05.02"/>
             <RequiredModel ModelUri="http://opcfoundation.org/UA/DI/" PublicationDate="2022-11-03T00:00:00Z" Version="1.04.0"/>
             <RequiredModel ModelUri="http://opcfoundation.org/UA/AMB/" PublicationDate="2022-11-01T00:00:00Z" Version="1.01.0"/>
@@ -114,11 +114,27 @@
             <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5039</Reference>
             <Reference ReferenceType="HasTypeDefinition">ns=4;i=1043</Reference>
             <Reference ReferenceType="HasComponent">ns=5;i=7017</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=7018</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=7019</Reference>
         </References>
     </UAObject>
 
-    <UAMethod NodeId="ns=5;i=7017" BrowseName="4:StartProgram" ParentNodeId="ns=5;i=5047">
-        <DisplayName>StartProgram</DisplayName>
+    <UAMethod NodeId="ns=5;i=7017" BrowseName="4:MoveToA" ParentNodeId="ns=5;i=5047">
+        <DisplayName>MoveToA</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5047</Reference>
+        </References>
+    </UAMethod>
+
+    <UAMethod NodeId="ns=5;i=7018" BrowseName="4:MoveToCentrifuge" ParentNodeId="ns=5;i=5047">
+        <DisplayName>MoveToCentrifuge</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5047</Reference>
+        </References>
+    </UAMethod>
+
+    <UAMethod NodeId="ns=5;i=7019" BrowseName="4:MoveToB" ParentNodeId="ns=5;i=5047">
+        <DisplayName>MoveToB</DisplayName>
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5047</Reference>
         </References>

@@ -14,7 +14,7 @@ namespace OpcUa.Lads.Foundation.Server
             return new RobotArmNodeManager(server, configuration);
         }
 
-        public StringCollection NamespacesUris => ["http://lab.server/RobotArm/"];
+        public StringCollection NamespacesUris => ["http://lab.server/RobotArmServer/"];
     }
 
     public class RobotArmNodeManager : CustomNodeManager2
@@ -27,7 +27,7 @@ namespace OpcUa.Lads.Foundation.Server
                 "http://opcfoundation.org/UA/AMB/",
                 "http://opcfoundation.org/UA/Machinery/",
                 "http://opcfoundation.org/UA/LADS/",
-                "http://lab.server/RobotArm/")
+                "http://lab.server/RobotArmServer/")
         {
             SystemContext.NodeIdFactory = this;
             NamespaceUris =
@@ -36,7 +36,7 @@ namespace OpcUa.Lads.Foundation.Server
                 "http://opcfoundation.org/UA/AMB/",
                 "http://opcfoundation.org/UA/Machinery/",
                 "http://opcfoundation.org/UA/LADS/",
-                "http://lab.server/RobotArm/"
+                "http://lab.server/RobotArmServer/"
             ];
         }
 
@@ -57,7 +57,7 @@ namespace OpcUa.Lads.Foundation.Server
                 ImportXmlResource(externalReferences, foundationAssembly, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.LADS.NodeSet2.xml");
 
                 var robotAssembly = typeof(RobotArmNodeManager).Assembly;
-                ImportXmlResource(externalReferences, robotAssembly, "RobotArm.RobotArm.xml");
+                ImportXmlResource(externalReferences, robotAssembly, "RobotArmServer.RobotArm.xml");
 
                 AddReverseReferences(externalReferences);
                 AttachLogicHandlers();
@@ -103,11 +103,21 @@ namespace OpcUa.Lads.Foundation.Server
 
         private void AttachLogicHandlers()
         {
-            ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/RobotArm/");
+            ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/RobotArmServer/");
 
-            if (FindPredefinedNode(new NodeId(7017u, ns), typeof(MethodState)) is MethodState startMethod)
+            if (FindPredefinedNode(new NodeId(7017u, ns), typeof(MethodState)) is MethodState moveToAMethod)
             {
-                startMethod.OnCallMethod = Method_OnCall;
+                moveToAMethod.OnCallMethod = Method_OnCall;
+            }
+
+            if (FindPredefinedNode(new NodeId(7018u, ns), typeof(MethodState)) is MethodState moveToCentrifugeMethod)
+            {
+                moveToCentrifugeMethod.OnCallMethod = Method_OnCall;
+            }
+
+            if (FindPredefinedNode(new NodeId(7019u, ns), typeof(MethodState)) is MethodState moveToBMethod)
+            {
+                moveToBMethod.OnCallMethod = Method_OnCall;
             }
 
             if (FindPredefinedNode(new NodeId(6018u, ns), typeof(BaseVariableState)) is BaseVariableState assetIdVar)
@@ -118,28 +128,31 @@ namespace OpcUa.Lads.Foundation.Server
 
         private ServiceResult OnVariableWrite(ISystemContext context, NodeState node, NumericRange indexRange, QualifiedName dataEncoding, ref object value, ref StatusCode statusCode, ref DateTime timestamp)
         {
-            Console.WriteLine($"[RobotArm Remote Control]: Variable '{node.BrowseName.Name}' updated to '{value}' by client.");
+            Console.WriteLine($"[RobotArmServer Remote Control]: Variable '{node.BrowseName.Name}' updated to '{value}' by client.");
             return StatusCodes.Good;
         }
 
         private ServiceResult Method_OnCall(ISystemContext context, MethodState method, IList<object> inputArguments, IList<object> outputArguments)
         {
-            Console.WriteLine($"[RobotArm Remote Control]: Execute Command => '{method.BrowseName.Name}'");
+            Console.WriteLine($"[RobotArmServer Remote Control]: Execute Command => '{method.BrowseName.Name}'");
 
-            if (method.BrowseName.Name == "StartProgram")
+            if (method.BrowseName.Name == "MoveToA")
             {
-                StartRobotTask();
+                StartMoveTask("Point A");
             }
-            else if (method.BrowseName.Name == "StopProgram")
+            else if (method.BrowseName.Name == "MoveToCentrifuge")
             {
-                _robotCts?.Cancel();
-                Console.WriteLine("[RobotArm]: Operation manually aborted.");
+                StartMoveTask("Centrifuge");
+            }
+            else if (method.BrowseName.Name == "MoveToB")
+            {
+                StartMoveTask("Point B");
             }
 
             return StatusCodes.Good;
         }
 
-        private void StartRobotTask()
+        private void StartMoveTask(string destination)
         {
             _robotCts?.Cancel();
             _robotCts = new CancellationTokenSource();
@@ -149,14 +162,17 @@ namespace OpcUa.Lads.Foundation.Server
             {
                 try
                 {
-                    while (!token.IsCancellationRequested)
+                    Console.WriteLine($"[RobotArmServer]: Starting movement to {destination}...");
+                    await Task.Delay(3000, token); // Симуляция 3 секунд перемещения
+                    
+                    if (!token.IsCancellationRequested)
                     {
-                        Console.WriteLine("[RobotArm Process]: Executing operation...");
-                        await Task.Delay(1000, token);
+                        Console.WriteLine($"[RobotArmServer]: Successfully arrived at {destination}.");
                     }
                 }
                 catch (TaskCanceledException)
                 {
+                    Console.WriteLine($"[RobotArmServer]: Movement to {destination} was cancelled.");
                 }
             }, token);
         }
