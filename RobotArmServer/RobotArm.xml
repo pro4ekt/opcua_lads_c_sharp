@@ -116,6 +116,7 @@
             <Reference ReferenceType="HasComponent">ns=5;i=7017</Reference>
             <Reference ReferenceType="HasComponent">ns=5;i=7018</Reference>
             <Reference ReferenceType="HasComponent">ns=5;i=7019</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=7020</Reference>
         </References>
     </UAObject>
 
@@ -135,6 +136,13 @@
 
     <UAMethod NodeId="ns=5;i=7019" BrowseName="4:MoveToB" ParentNodeId="ns=5;i=5047">
         <DisplayName>MoveToB</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5047</Reference>
+        </References>
+    </UAMethod>
+
+    <UAMethod NodeId="ns=5;i=7020" BrowseName="4:MoveStop" ParentNodeId="ns=5;i=5047">
+        <DisplayName>MoveStop</DisplayName>
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5047</Reference>
         </References>

@@ -120,6 +120,11 @@ namespace OpcUa.Lads.Foundation.Server
                 moveToBMethod.OnCallMethod = Method_OnCall;
             }
 
+            if (FindPredefinedNode(new NodeId(7020u, ns), typeof(MethodState)) is MethodState moveStopMethod)
+            {
+                moveStopMethod.OnCallMethod = Method_OnCall;
+            }
+
             if (FindPredefinedNode(new NodeId(6018u, ns), typeof(BaseVariableState)) is BaseVariableState assetIdVar)
             {
                 assetIdVar.OnWriteValue = new NodeValueEventHandler(OnVariableWrite);
@@ -147,6 +152,11 @@ namespace OpcUa.Lads.Foundation.Server
             else if (method.BrowseName.Name == "MoveToB")
             {
                 StartMoveTask("Point B");
+            }
+            else if (method.BrowseName.Name == "MoveStop")
+            {
+                _robotCts?.Cancel();
+                Console.WriteLine("[RobotArmServer]: Movement manually stopped.");
             }
 
             return StatusCodes.Good;
