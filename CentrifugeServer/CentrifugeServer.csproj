@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <EmbeddedResource Include="Centrifuge.xml" />
+      <EmbeddedResource Include="UAModelerCentrifuge.xml" /> 
     </ItemGroup>
 
     <ItemGroup>
