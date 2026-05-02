@@ -131,8 +131,8 @@
             <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5047</Reference>
         </References>
     </UAMethod>
-
-    <UAObject NodeId="ns=5;i=5016" BrowseName="1:Identification" ParentNodeId="ns=5;i=5011">
+    
+    <UAObject NodeId="ns=5;i=5016" BrowseName="3:Identification" ParentNodeId="ns=5;i=5011">
         <DisplayName>Identification</DisplayName>
         <Description>Identification provides properties to identify a device or component.</Description>
         <References>
@@ -151,5 +151,4 @@
             <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
         </References>
     </UAVariable>
-
 </UANodeSet>
