@@ -58,7 +58,7 @@
         <Alias Alias="KeyValueType">ns=4;i=3003</Alias>
     </Aliases>
 
-    <!-- 1. Корневой объект: CentrifugeDevice -->
+    <!-- Корневой объект: CentrifugeDevice -->
     <UAObject NodeId="ns=5;i=5011" BrowseName="5:CentrifugeDeviceSet" ParentNodeId="ns=1;i=5001">
         <DisplayName>CentrifugeDevice</DisplayName>
         <References>
@@ -77,6 +77,27 @@
         </References>
     </UAObjectType>
 
+    <UAObject NodeId="ns=5;i=5016" BrowseName="3:Identification" ParentNodeId="ns=5;i=5011">
+        <DisplayName>Identification</DisplayName>
+        <Description>Identification provides properties to identify a device or component.</Description>
+        <References>
+            <Reference ReferenceType="HasProperty" IsForward="false">ns=5;i=5011</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=3;i=1012</Reference>
+            <Reference ReferenceType="HasProperty">ns=5;i=6018</Reference>
+        </References>
+    </UAObject>
+
+    <UAVariable DataType="String" NodeId="ns=5;i=6018" BrowseName="1:AssetId" ParentNodeId="ns=5;i=5016" UserAccessLevel="3" AccessLevel="3">
+        <DisplayName>AssetId</DisplayName>
+        <Description>AssetId is a user writable alphanumeric character sequence uniquely identifying a component.</Description>
+        <References>
+            <Reference ReferenceType="HasProperty" IsForward="false">ns=5;i=5011</Reference>
+            <Reference ReferenceType="HasProperty" IsForward="false">ns=5;i=5016</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+    </UAVariable>
+
+    <!-- ПАПКА ДЛЯ ФУНКЦИОНАЛЬНЫХ БЛОКОВ -->
     <UAObject NodeId="ns=5;i=5024" BrowseName="4:FunctionalUnitSet" ParentNodeId="ns=5;i=5011">
         <DisplayName>FunctionalUnitSet</DisplayName>
         <Description>The FunctionalUnitSetType provides a set of a FunctionalUnit objects.</Description>
@@ -87,6 +108,7 @@
         </References>
     </UAObject>
 
+    <!-- ФУНКЦИОНАЛЬНЫЙ БЛОК: CentrifugeUnit -->
     <UAObject NodeId="ns=5;i=5039" BrowseName="5:CentrifugeUnit" ParentNodeId="ns=5;i=5024">
         <DisplayName>CentrifugeUnit</DisplayName>
         <Description>The FunctionalUnitType represents a functional unit of a laboratory or analytical device.</Description>
@@ -95,15 +117,6 @@
             <Reference ReferenceType="HasTypeDefinition">ns=4;i=1003</Reference>
             <Reference ReferenceType="HasComponent">ns=5;i=5045</Reference>
             <Reference ReferenceType="HasComponent">ns=5;i=5047</Reference>
-        </References>
-    </UAObject>
-
-    <UAObject NodeId="ns=5;i=5045" BrowseName="4:FunctionSet" ParentNodeId="ns=5;i=5039">
-        <DisplayName>FunctionSet</DisplayName>
-        <Description>The FunctionSetType is used for organising FunctionType objects in an unordered list structure.</Description>
-        <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5039</Reference>
-            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1026</Reference>
         </References>
     </UAObject>
 
@@ -131,24 +144,149 @@
             <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5047</Reference>
         </References>
     </UAMethod>
-    
-    <UAObject NodeId="ns=5;i=5016" BrowseName="3:Identification" ParentNodeId="ns=5;i=5011">
-        <DisplayName>Identification</DisplayName>
-        <Description>Identification provides properties to identify a device or component.</Description>
+
+    <!-- НАБОР ФУНКЦИЙ -->
+    <UAObject NodeId="ns=5;i=5045" BrowseName="4:FunctionSet" ParentNodeId="ns=5;i=5039">
+        <DisplayName>FunctionSet</DisplayName>
+        <Description>The FunctionSetType is used for organising FunctionType objects in an unordered list structure.</Description>
         <References>
-            <Reference ReferenceType="HasProperty" IsForward="false">ns=5;i=5011</Reference>
-            <Reference ReferenceType="HasTypeDefinition">ns=3;i=1012</Reference>
-            <Reference ReferenceType="HasProperty">ns=5;i=6018</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5039</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1026</Reference>
+            <!-- Прямая ссылка на функцию SpeedSensor -->
+            <Reference ReferenceType="HasComponent">ns=5;i=5051</Reference>
         </References>
     </UAObject>
 
-    <UAVariable DataType="String" NodeId="ns=5;i=6018" BrowseName="1:AssetId" ParentNodeId="ns=5;i=5016" UserAccessLevel="3" AccessLevel="3">
-        <DisplayName>AssetId</DisplayName>
-        <Description>AssetId is a user writable alphanumeric character sequence uniquely identifying a component. The ID is provided by the integrator or user of the device.</Description>
+    <!-- ФУНКЦИЯ: SpeedSensor (Вместо Injector) -->
+    <UAObject NodeId="ns=5;i=5051" BrowseName="5:SpeedSensor" ParentNodeId="ns=5;i=5045">
+        <DisplayName>SpeedSensor</DisplayName>
+        <Description>Controls and measures the rotation speed of the centrifuge.</Description>
         <References>
-            <Reference ReferenceType="HasProperty" IsForward="false">ns=5;i=5011</Reference>
-            <Reference ReferenceType="HasProperty" IsForward="false">ns=5;i=5016</Reference>
-            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5045</Reference>
+            <!-- Используем тип AnalogControlFunctionWithTotalizerType -->
+            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1014</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=5061</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=5060</Reference>
+            <!-- Обязательные переменные типа и скорость -->
+            <Reference ReferenceType="HasComponent">ns=5;i=6200</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=6201</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=6202</Reference>
+            <Reference ReferenceType="HasProperty">ns=5;i=6203</Reference>
+        </References>
+    </UAObject>
+
+    <!-- ПЕРЕМЕННЫЕ SPEED SENSOR -->
+    <UAVariable DataType="Double" NodeId="ns=5;i=6200" BrowseName="4:CurrentValue" ParentNodeId="ns=5;i=5051">
+        <DisplayName>CurrentValue</DisplayName>
+        <Description>CurrentValue is the current process value.</Description>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5051</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=5;i=5061</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=17570</Reference>
         </References>
     </UAVariable>
+
+    <UAVariable DataType="Double" NodeId="ns=5;i=6201" BrowseName="4:TargetValue" ParentNodeId="ns=5;i=5051" UserAccessLevel="3" AccessLevel="3">
+        <DisplayName>TargetValue</DisplayName>
+        <Description>TargetValue is the targeted set-point value.</Description>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5051</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=5;i=5061</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=17570</Reference>
+        </References>
+    </UAVariable>
+
+    <UAVariable DataType="Double" NodeId="ns=5;i=6202" BrowseName="4:TotalizedValue" ParentNodeId="ns=5;i=5051">
+        <DisplayName>TotalizedValue</DisplayName>
+        <Description>TotalizedValue is the totalized process value.</Description>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5051</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=5;i=5061</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=17570</Reference>
+        </References>
+    </UAVariable>
+
+    <UAVariable DataType="UInt32" NodeId="ns=5;i=6203" BrowseName="5:Speed" ParentNodeId="ns=5;i=5051" UserAccessLevel="3" AccessLevel="3">
+        <DisplayName>Speed</DisplayName>
+        <Description>Speed of the spinning process.</Description>
+        <References>
+            <Reference ReferenceType="HasProperty" IsForward="false">ns=5;i=5051</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=17570</Reference>
+        </References>
+    </UAVariable>
+
+    <!-- ОПЕРАЦИОННАЯ ГРУППА SPEED SENSOR -->
+    <UAObject NodeId="ns=5;i=5061" BrowseName="4:Operational" ParentNodeId="ns=5;i=5051">
+        <DisplayName>Operational</DisplayName>
+        <Description>Operational is a FunctionalGroup that organizes methods and variables.</Description>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5051</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=1;i=1005</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=5076</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=5077</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=7024</Reference>
+        </References>
+    </UAObject>
+
+    <UAObject NodeId="ns=5;i=5076" BrowseName="4:Calibration" ParentNodeId="ns=5;i=5061">
+        <DisplayName>Calibration</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5061</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=1;i=1005</Reference>
+        </References>
+    </UAObject>
+
+    <UAObject NodeId="ns=5;i=5077" BrowseName="4:OperationalSettings" ParentNodeId="ns=5;i=5061">
+        <DisplayName>OperationalSettings</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5061</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=1;i=1005</Reference>
+        </References>
+    </UAObject>
+
+    <UAMethod NodeId="ns=5;i=7024" BrowseName="4:Stop" ParentNodeId="ns=5;i=5061">
+        <DisplayName>Stop</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5061</Reference>
+        </References>
+    </UAMethod>
+
+    <!-- STATE MACHINE SPEED SENSOR -->
+    <UAObject NodeId="ns=5;i=5060" BrowseName="4:ControlFunctionState" ParentNodeId="ns=5;i=5051">
+        <DisplayName>ControlFunctionState</DisplayName>
+        <Description>ControlFunctionState is a state machine which represents the execution state.</Description>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5051</Reference>
+            <Reference ReferenceType="HasTypeDefinition">ns=4;i=1044</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=6195</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=6196</Reference>
+            <Reference ReferenceType="HasComponent">ns=5;i=6197</Reference>
+        </References>
+    </UAObject>
+
+    <UAVariable DataType="NodeId" ValueRank="1" NodeId="ns=5;i=6195" ArrayDimensions="1" BrowseName="AvailableStates" ParentNodeId="ns=5;i=5060">
+        <DisplayName>AvailableStates</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5060</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+    </UAVariable>
+
+    <UAVariable DataType="NodeId" ValueRank="1" NodeId="ns=5;i=6196" ArrayDimensions="1" BrowseName="AvailableTransitions" ParentNodeId="ns=5;i=5060">
+        <DisplayName>AvailableTransitions</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5060</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+        </References>
+    </UAVariable>
+
+    <UAVariable DataType="LocalizedText" NodeId="ns=5;i=6197" BrowseName="CurrentState" ParentNodeId="ns=5;i=5060">
+        <DisplayName>CurrentState</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=5;i=5060</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=5;i=5061</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=2760</Reference>
+        </References>
+    </UAVariable>
+
 </UANodeSet>
