@@ -205,21 +205,57 @@ namespace OpcUa.Lads.Foundation.Server
             _spinningCts = new CancellationTokenSource();
             var token = _spinningCts.Token;
             
+            ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/Centrifuge/");
+            
+            // Находим узлы, чтобы обновлять их значения для клиентов OPC UA
+            var currentStateNode = FindPredefinedNode(new NodeId(6197u, ns), typeof(BaseVariableState)) as BaseVariableState;
+            var speedCurrentValueNode = FindPredefinedNode(new NodeId(6200u, ns), typeof(BaseVariableState)) as BaseVariableState;
+
             Task.Run(async () =>
             {
                 try
                 {
-                    while (!token.IsCancellationRequested)
+                    // 1. Статус меняется на "Running" (указываем пространство имён Opc.Ua)
+                    UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Running"));
+                    double currentSpeed = 0;
+
+                    // Допустим, мы крутим 10 секунд
+                    for (int i = 0; i < 10; i++)
                     {
-                        Console.WriteLine("[Centrifuge]: Spinning...");
-                        await Task.Delay(1000, token); // Имитируем работу центрифуги (каждую секунду выводим статус)
+                        token.ThrowIfCancellationRequested();
+
+                        // 2. Имитируем набор скорости
+                        currentSpeed += 500; 
+                        UpdateNodeValue(speedCurrentValueNode, currentSpeed);
+
+                        Console.WriteLine($"[Centrifuge]: Spinning... Speed: {currentSpeed} RPM");
+                        await Task.Delay(1000, token);
                     }
+
+                    // 3. Успешное завершение (Complete)
+                    UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Complete"));
+                    Console.WriteLine("[Centrifuge]: Spinning Completed Successfully.");
+                    UpdateNodeValue(speedCurrentValueNode, 0.0); // Остановились
                 }
-                catch (TaskCanceledException)
+                catch (OperationCanceledException)
                 {
-                    // Задача была отменена токеном
+                    // 4. Остановка пользователем (Aborted)
+                    UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Aborted"));
+                    Console.WriteLine("[Centrifuge]: Spinning manually aborted. State -> Aborted");
+                    UpdateNodeValue(speedCurrentValueNode, 0.0); 
                 } 
             }, token);
+        }
+
+        // Вспомогательный метод для обновления значения ноды и уведомления подписчиков (клиентов)
+        private void UpdateNodeValue(BaseVariableState node, object newValue)
+        {
+            if (node != null)
+            {
+                node.Value = newValue;
+                node.Timestamp = DateTime.UtcNow;
+                node.ClearChangeMasks(SystemContext, false); // Сообщаем серверу, что значение изменено
+            }
         }
     }
 }
