@@ -4,6 +4,8 @@ using System.IO;
 using Opc.Ua.Export;
 using System.Threading;
 using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
 
 namespace OpcUa.Lads.Foundation.Server
 {
@@ -106,85 +108,129 @@ namespace OpcUa.Lads.Foundation.Server
             ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/RobotArmServer/");
 
             if (FindPredefinedNode(new NodeId(7017u, ns), typeof(MethodState)) is MethodState moveToAMethod)
-            {
                 moveToAMethod.OnCallMethod = Method_OnCall;
-            }
 
             if (FindPredefinedNode(new NodeId(7018u, ns), typeof(MethodState)) is MethodState moveToCentrifugeMethod)
-            {
                 moveToCentrifugeMethod.OnCallMethod = Method_OnCall;
-            }
 
             if (FindPredefinedNode(new NodeId(7019u, ns), typeof(MethodState)) is MethodState moveToBMethod)
-            {
                 moveToBMethod.OnCallMethod = Method_OnCall;
-            }
 
             if (FindPredefinedNode(new NodeId(7020u, ns), typeof(MethodState)) is MethodState moveStopMethod)
-            {
                 moveStopMethod.OnCallMethod = Method_OnCall;
-            }
 
-            if (FindPredefinedNode(new NodeId(6018u, ns), typeof(BaseVariableState)) is BaseVariableState assetIdVar)
+            uint[] writableVariableIds = [ 6018u, 6201u, 6203u ]; 
+            foreach (var varId in writableVariableIds)
             {
-                assetIdVar.OnWriteValue = new NodeValueEventHandler(OnVariableWrite);
+                if (FindPredefinedNode(new NodeId(varId, ns), typeof(BaseVariableState)) is BaseVariableState varNode)
+                {
+                    varNode.OnWriteValue = new NodeValueEventHandler(OnVariableWrite);
+                }
             }
+            
+            // Зададим начальное положение робота (0.0 = Home)
+            if (FindPredefinedNode(new NodeId(6200u, ns), typeof(BaseVariableState)) is BaseVariableState curLoc)
+                UpdateNodeValue(curLoc, 0.0);
+                
+            if (FindPredefinedNode(new NodeId(6197u, ns), typeof(BaseVariableState)) is BaseVariableState stateNode)
+                UpdateNodeValue(stateNode, new Opc.Ua.LocalizedText("en", "Idle"));
         }
 
         private ServiceResult OnVariableWrite(ISystemContext context, NodeState node, NumericRange indexRange, QualifiedName dataEncoding, ref object value, ref StatusCode statusCode, ref DateTime timestamp)
         {
-            Console.WriteLine($"[RobotArmServer Remote Control]: Variable '{node.BrowseName.Name}' updated to '{value}' by client.");
+            Console.WriteLine($"[RobotArmServer]: Variable '{node.BrowseName.Name}' updated to '{value}' by client.");
             return StatusCodes.Good;
         }
 
         private ServiceResult Method_OnCall(ISystemContext context, MethodState method, IList<object> inputArguments, IList<object> outputArguments)
         {
-            Console.WriteLine($"[RobotArmServer Remote Control]: Execute Command => '{method.BrowseName.Name}'");
+            ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/RobotArmServer/");
+            var currentStateNode = FindPredefinedNode(new NodeId(6197u, ns), typeof(BaseVariableState)) as BaseVariableState;
+            string stateBefore = (currentStateNode?.Value as Opc.Ua.LocalizedText)?.Text ?? "Unknown";
 
+            Console.WriteLine($"[RobotArmServer]: Execute Command => '{method.BrowseName.Name}'. State Before: {stateBefore}");
+
+            // Mapping: 1.0 = Point A, 2.0 = Point B, 3.0 = Centrifuge
             if (method.BrowseName.Name == "MoveToA")
-            {
-                StartMoveTask("Point A");
-            }
+                StartMoveTask(1.0, "Point A");
             else if (method.BrowseName.Name == "MoveToCentrifuge")
-            {
-                StartMoveTask("Centrifuge");
-            }
+                StartMoveTask(3.0, "Centrifuge");
             else if (method.BrowseName.Name == "MoveToB")
-            {
-                StartMoveTask("Point B");
-            }
+                StartMoveTask(2.0, "Point B");
             else if (method.BrowseName.Name == "MoveStop")
             {
                 _robotCts?.Cancel();
                 Console.WriteLine("[RobotArmServer]: Movement manually stopped.");
             }
 
+            string stateAfter = (currentStateNode?.Value as Opc.Ua.LocalizedText)?.Text ?? "Unknown";
+            Console.WriteLine($"[RobotArmServer]: Execute Command => '{method.BrowseName.Name}' dispatched. State After (immediate): {stateAfter}");
+
             return StatusCodes.Good;
         }
 
-        private void StartMoveTask(string destination)
+                private void StartMoveTask(double destinationValue, string destinationName)
         {
             _robotCts?.Cancel();
             _robotCts = new CancellationTokenSource();
             var token = _robotCts.Token;
 
+            ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/RobotArmServer/");
+            
+            var currentStateNode = FindPredefinedNode(new NodeId(6197u, ns), typeof(BaseVariableState)) as BaseVariableState;
+            var currentLocationNode = FindPredefinedNode(new NodeId(6200u, ns), typeof(BaseVariableState)) as BaseVariableState;
+            var targetLocationNode = FindPredefinedNode(new NodeId(6201u, ns), typeof(BaseVariableState)) as BaseVariableState;
+
             Task.Run(async () =>
             {
                 try
                 {
-                    Console.WriteLine($"[RobotArmServer]: Starting movement to {destination}...");
-                    await Task.Delay(3000, token); // Симуляция 3 секунд перемещения
+                    UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Moving"));
+                    UpdateNodeValue(targetLocationNode, destinationValue);
+
+                    Console.WriteLine($"[RobotArmServer]: Starting movement to {destinationName} (Point {destinationValue})...");
                     
-                    if (!token.IsCancellationRequested)
-                    {
-                        Console.WriteLine($"[RobotArmServer]: Successfully arrived at {destination}.");
-                    }
+                    // Симуляция 3 секунд перемещения
+                    await Task.Delay(3000, token); 
+                    
+                    token.ThrowIfCancellationRequested();
+
+                    // Доехали
+                    UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Complete"));
+                    UpdateNodeValue(currentLocationNode, destinationValue);
+                    Console.WriteLine($"[RobotArmServer]: Successfully arrived at {destinationName}.");
+                    
+                    // Вывод о статусе Complete
+                    Console.WriteLine("StateMachineStatus: Completed - Return to Idle");
+
+                    // Возврат в Idle для готовности к новой команде
+                    await Task.Delay(1000); 
+                    UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Idle"));
+                    
+                    // Вывод о переходе в статус Idle
+                    Console.WriteLine("StateMachineStatus: Idle");
                 }
-                catch (TaskCanceledException)
+                catch (OperationCanceledException)
                 {
-                    Console.WriteLine($"[RobotArmServer]: Movement to {destination} was cancelled.");
+                    UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Aborted"));
+                    Console.WriteLine($"[RobotArmServer]: Movement to {destinationName} was cancelled.");
+
+                    // Возврат в Idle после отмены
+                    await Task.Delay(1000); 
+                    UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Idle"));
+                    Console.WriteLine("StateMachineStatus: Idle");
                 }
             }, token);
+        }
+        private void UpdateNodeValue(BaseVariableState node, object newValue)
+        {
+            if (node != null)
+            {
+                node.Value = newValue;
+                node.Timestamp = DateTime.UtcNow;
+                node.StatusCode = StatusCodes.Good;
+                // Удалено: node.ClearChangeMasks(SystemContext, false); 
+            }
         }
     }
 }
