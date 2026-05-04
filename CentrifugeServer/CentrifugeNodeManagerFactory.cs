@@ -219,8 +219,8 @@ namespace OpcUa.Lads.Foundation.Server
                     UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Running"));
                     double currentSpeed = 0;
 
-                    // Допустим, мы крутим 10 секунд
-                    for (int i = 0; i < 10; i++)
+                    // Допустим, мы крутим 5 секунд
+                    for (int i = 0; i < 5; i++)
                     {
                         token.ThrowIfCancellationRequested();
 
