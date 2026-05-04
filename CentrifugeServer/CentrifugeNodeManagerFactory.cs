@@ -146,10 +146,34 @@ namespace OpcUa.Lads.Foundation.Server
                 stopSpinningMethod.OnCallMethod = Method_OnCall;
             }
 
-            // Привязываем коллбек на изменение переменной AssetId (в XML это i=6018)
-            if (FindPredefinedNode(new NodeId(6018u, ns), typeof(BaseVariableState)) is BaseVariableState assetIdVar)
+            // Находим метод Stop (в XML это i=7024 - внутри SpeedSensor -> Operational)
+            if (FindPredefinedNode(new NodeId(7024u, ns), typeof(MethodState)) is MethodState stopSpeedMethod)
             {
-                assetIdVar.OnWriteValue = new NodeValueEventHandler(OnVariableWrite);
+                stopSpeedMethod.OnCallMethod = Method_OnCall;
+            }
+
+            // Находим метод Stop (в XML это i=7025 - внутри TemperatureSensor -> Operational)
+            if (FindPredefinedNode(new NodeId(7025u, ns), typeof(MethodState)) is MethodState stopTempMethod)
+            {
+                stopTempMethod.OnCallMethod = Method_OnCall;
+            }
+
+            // Привязываем коллбеки на изменение переменных
+            uint[] writableVariableIds = 
+            [
+                6018u, // AssetId
+                6201u, // SpeedSensor: TargetValue
+                6203u, // SpeedSensor: Speed
+                6301u, // TemperatureSensor: TargetValue
+                6303u  // TemperatureSensor: Temperature
+            ];
+
+            foreach (var varId in writableVariableIds)
+            {
+                if (FindPredefinedNode(new NodeId(varId, ns), typeof(BaseVariableState)) is BaseVariableState variableNode)
+                {
+                    variableNode.OnWriteValue = new NodeValueEventHandler(OnVariableWrite);
+                }
             }
         }
         
@@ -165,9 +189,9 @@ namespace OpcUa.Lads.Foundation.Server
                 OnStartProgramCalled?.Invoke();
                 StartSpinningTask();
             }
-            else if (method.BrowseName.Name == "StopSpinning")
+            else if (method.BrowseName.Name == "StopSpinning" || method.BrowseName.Name == "Stop")
             {
-                // Останавливаем фоновый процесс, если вызван StopSpinning
+                // Останавливаем фоновый процесс, если вызван StopSpinning или Stop
                 _spinningCts?.Cancel();
                 Console.WriteLine("[Centrifuge]: Spinning manually aborted.");
             }
