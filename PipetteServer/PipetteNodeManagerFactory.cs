@@ -139,7 +139,11 @@ namespace OpcUa.Lads.Foundation.Server
 
         private ServiceResult Method_OnCall(ISystemContext context, MethodState method, IList<object> inputArguments, IList<object> outputArguments)
         {
-            Console.WriteLine($"[Pipette Remote Control]: Execute Command => '{method.BrowseName.Name}'");
+            ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/Pipette/");
+            var currentStateNode = FindPredefinedNode(new NodeId(6197u, ns), typeof(BaseVariableState)) as BaseVariableState;
+            string stateBefore = (currentStateNode?.Value as Opc.Ua.LocalizedText)?.Text ?? "Unknown";
+
+            Console.WriteLine($"[Pipette Remote Control]: Execute Command => '{method.BrowseName.Name}'. State Before: {stateBefore}");
 
             if (method.BrowseName.Name == "StartPipetting")
             {
@@ -150,6 +154,9 @@ namespace OpcUa.Lads.Foundation.Server
                 _pipettingCts?.Cancel();
                 Console.WriteLine("[Pipette]: Pipetting manually aborted.");
             }
+
+            string stateAfter = (currentStateNode?.Value as Opc.Ua.LocalizedText)?.Text ?? "Unknown";
+            Console.WriteLine($"[Pipette Remote Control]: Execute Command => '{method.BrowseName.Name}' dispatched. State After (immediate): {stateAfter}");
 
             return StatusCodes.Good;
         }
@@ -236,3 +243,4 @@ namespace OpcUa.Lads.Foundation.Server
         }
     }
 }
+

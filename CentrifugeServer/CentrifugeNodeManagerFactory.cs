@@ -152,7 +152,11 @@ namespace OpcUa.Lads.Foundation.Server
         
         private ServiceResult Method_OnCall(ISystemContext context, MethodState method, IList<object> inputArguments, IList<object> outputArguments)
         {
-            Console.WriteLine($"[Centrifuge Remote Control]: Execute Command => '{method.BrowseName.Name}'");
+            ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/Centrifuge/");
+            var currentStateNode = FindPredefinedNode(new NodeId(6197u, ns), typeof(BaseVariableState)) as BaseVariableState;
+            string stateBefore = (currentStateNode?.Value as Opc.Ua.LocalizedText)?.Text ?? "Unknown";
+
+            Console.WriteLine($"[Centrifuge Remote Control]: Execute Command => '{method.BrowseName.Name}'. State Before: {stateBefore}");
 
             if (method.BrowseName.Name == "StartSpinning")
             {
@@ -164,6 +168,9 @@ namespace OpcUa.Lads.Foundation.Server
                 _spinningCts?.Cancel();
                 Console.WriteLine("[Centrifuge]: Spinning manually aborted.");
             }
+
+            string stateAfter = (currentStateNode?.Value as Opc.Ua.LocalizedText)?.Text ?? "Unknown";
+            Console.WriteLine($"[Centrifuge Remote Control]: Execute Command => '{method.BrowseName.Name}' dispatched. State After (immediate): {stateAfter}");
 
             return StatusCodes.Good;
         }
