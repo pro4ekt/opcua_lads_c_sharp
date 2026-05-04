@@ -229,7 +229,9 @@ namespace OpcUa.Lads.Foundation.Server
                 node.Value = newValue;
                 node.Timestamp = DateTime.UtcNow;
                 node.StatusCode = StatusCodes.Good;
-                // Удалено: node.ClearChangeMasks(SystemContext, false); 
+                // ВАЖНО: Обязательно нужно вызывать это, чтобы уведомить OPC UA Сервер 
+                // и сбросить маски изменений, тогда подписчики получат DataChange Notification.
+                node.ClearChangeMasks(SystemContext, false); 
             }
         }
     }
