@@ -605,7 +605,7 @@
             </uax:ListOfExtensionObject>
         </Value>
     </UAVariable>
-    <UAMethod NodeId="ns=4;i=7004" BrowseName="4:Aspirate" ParentNodeId="ns=4;i=5006">
+    <UAMethod NodeId="ns=4;i=7004" BrowseName="3:Aspirate" ParentNodeId="ns=4;i=5006">
         <DisplayName>Aspirate</DisplayName>
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=4;i=5006</Reference>

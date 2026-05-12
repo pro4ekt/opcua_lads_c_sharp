@@ -106,6 +106,35 @@ public class PipetteNodeManager : CustomNodeManager2
     {
         ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://Pipette");
 
+        // Инициализируем начальное состояние (Idle) при запуске сервера
+        var currentStateNode = FindPredefinedNode(new NodeId(6096u, ns), typeof(BaseVariableState)) as BaseVariableState;
+        if (currentStateNode != null && currentStateNode.Value == null)
+        {
+            currentStateNode.Value = new Opc.Ua.LocalizedText("en", "Idle");
+        }
+
+        // Подключаем обработчик изменения переменной TargetValue (NodeId: 6093)
+        var targetVolumeNode = FindPredefinedNode(new NodeId(6093u, ns), typeof(BaseVariableState)) as BaseVariableState;
+        if (targetVolumeNode != null)
+        {
+            if (targetVolumeNode.Value == null)
+            {
+                targetVolumeNode.Value = 0.0; // Инициализируем дефолтным значением
+            }
+            // Даем права на запись (AccessLevel и UserAccessLevel)
+            targetVolumeNode.AccessLevel = AccessLevels.CurrentReadOrWrite;
+            targetVolumeNode.UserAccessLevel = AccessLevels.CurrentReadOrWrite;
+            
+            targetVolumeNode.OnSimpleWriteValue = OnTargetVolume_Write;
+        }
+
+        // Инициализируем CurrentValue (NodeId: 6092) дефолтным значением
+        var currentVolumeNode = FindPredefinedNode(new NodeId(6092u, ns), typeof(BaseVariableState)) as BaseVariableState;
+        if (currentVolumeNode != null && currentVolumeNode.Value == null)
+        {
+            currentVolumeNode.Value = 0.0;
+        }
+
         // Подключаем методы из FunctionalUnitState (Aspirate, Dispense, AttachTip, EjectTip)
         if (FindPredefinedNode(new NodeId(7004u, ns), typeof(MethodState)) is MethodState aspirateMethod)
             aspirateMethod.OnCallMethod = Method_OnCall;
@@ -118,6 +147,29 @@ public class PipetteNodeManager : CustomNodeManager2
 
         if (FindPredefinedNode(new NodeId(7007u, ns), typeof(MethodState)) is MethodState ejectTipMethod)
             ejectTipMethod.OnCallMethod = Method_OnCall;
+    }
+
+    private ServiceResult OnTargetVolume_Write(ISystemContext context, NodeState node, ref object parsedValue)
+    {
+        Console.WriteLine($"[Pipette]: Client requested to change 'Target Value' to => {parsedValue}");
+        
+        // Пример логики: если клиент пытается задать объем больше 100, мы можем выдать предупреждение или отклонить
+        try
+        {
+            double vol = Convert.ToDouble(parsedValue);
+            if (vol > 100.0)
+            {
+                Console.WriteLine("[Pipette]: Warning! Requested volume is unusually high!");
+                // Если мы хотим запретить запись, можно раскомментировать строку ниже:
+                // return StatusCodes.BadOutOfRange;
+            }
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("[Pipette]: Failed to parse the new Target Value.");
+        }
+
+        return StatusCodes.Good;
     }
 
     private ServiceResult Method_OnCall(ISystemContext context, MethodState method, IList<object> inputArguments, IList<object> outputArguments)
@@ -134,7 +186,7 @@ public class PipetteNodeManager : CustomNodeManager2
         var targetVolumeNode = FindPredefinedNode(new NodeId(6093u, ns), typeof(BaseVariableState)) as BaseVariableState;
 
         var stateBefore = currentStateNode?.Value as Opc.Ua.LocalizedText;
-        Console.WriteLine($"[Pipette]: Метод вызван => '{method.BrowseName.Name}'. Current State: {stateBefore?.Text ?? "Unknown"}");
+        Console.WriteLine($"[Pipette]: Method '{method.BrowseName.Name}' called. Current State: {stateBefore?.Text ?? "Unknown"}");
 
         // Запуск асинхронной задачи в зависимости от метода
         StartDeviceTask(method.BrowseName.Name, currentStateNode, currentVolumeNode, targetVolumeNode);
