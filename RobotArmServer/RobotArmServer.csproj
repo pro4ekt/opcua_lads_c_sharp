@@ -10,6 +10,7 @@
 
     <ItemGroup>
         <EmbeddedResource Include="RobotArm.xml" />
+        <EmbeddedResource Include="TestDevice.xml" />
     </ItemGroup>
     
     <ItemGroup>

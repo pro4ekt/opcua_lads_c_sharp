@@ -1,246 +1,217 @@
 ﻿using Opc.Ua;
 using Opc.Ua.Server;
-using System.IO;
 using Opc.Ua.Export;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 
-namespace OpcUa.Lads.Foundation.Server
-{
-    public class PipetteNodeManagerFactory : INodeManagerFactory
-    {
-        public INodeManager Create(IServerInternal server, ApplicationConfiguration configuration)
-        {
-            return new PipetteNodeManager(server, configuration);
-        }
+namespace OpcUa.Lads.Foundation.Server;
 
-        public StringCollection NamespacesUris => ["http://lab.server/Pipette/"];
+public class PipetteNodeManagerFactory : INodeManagerFactory
+{
+    public INodeManager Create(IServerInternal server, ApplicationConfiguration configuration)
+    {
+        return new PipetteNodeManager(server, configuration);
     }
 
-    public class PipetteNodeManager : CustomNodeManager2
+    public StringCollection NamespacesUris => ["http://Pipette"];
+}
+
+public class PipetteNodeManager : CustomNodeManager2
+{
+    private CancellationTokenSource _taskCts;
+
+    public PipetteNodeManager(IServerInternal server, ApplicationConfiguration configuration) 
+        : base(server, configuration, 
+            "http://opcfoundation.org/UA/DI/",
+            "http://opcfoundation.org/UA/Machinery/",
+            "http://opcfoundation.org/UA/LADS/",
+            "http://Pipette")
     {
-        private CancellationTokenSource _pipettingCts;
+        SystemContext.NodeIdFactory = this;
+        NamespaceUris =
+        [
+            "http://opcfoundation.org/UA/DI/",
+            "http://opcfoundation.org/UA/Machinery/",
+            "http://opcfoundation.org/UA/LADS/",
+            "http://Pipette"
+        ];
+    }
 
-        public PipetteNodeManager(IServerInternal server, ApplicationConfiguration configuration) 
-            : base(server, configuration, 
-                "http://opcfoundation.org/UA/DI/",
-                "http://opcfoundation.org/UA/AMB/",
-                "http://opcfoundation.org/UA/Machinery/",
-                "http://opcfoundation.org/UA/LADS/",
-                "http://lab.server/Pipette/")
+    public override void CreateAddressSpace(IDictionary<NodeId, IList<IReference>> externalReferences)
+    {
+        lock (Lock)
         {
-            SystemContext.NodeIdFactory = this; 
-            NamespaceUris =
-            [
-                "http://opcfoundation.org/UA/DI/",
-                "http://opcfoundation.org/UA/AMB/",
-                "http://opcfoundation.org/UA/Machinery/",
-                "http://opcfoundation.org/UA/LADS/",
-                "http://lab.server/Pipette/"
-            ];
+            if (!externalReferences.TryGetValue(ObjectIds.ObjectsFolder, out IList<IReference> references))
+            {
+                externalReferences[ObjectIds.ObjectsFolder] = references = new List<IReference>();
+            }
+
+            var foundationAssembly = typeof(OpcUa.Lads.Foundation.Server.NodeManager).Assembly;
+
+            // Загрузка стандартных словарей LADS (Учитывая, что AMB больше нет в Pipette.xml)
+            ImportXmlResource(externalReferences, foundationAssembly, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.DI.NodeSet2.xml");
+            ImportXmlResource(externalReferences, foundationAssembly, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.Machinery.NodeSet2.xml");
+            ImportXmlResource(externalReferences, foundationAssembly, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.LADS.NodeSet2.xml");
+
+            // Загрузка модели Pipette
+            var currentAssembly = typeof(PipetteNodeManager).Assembly;
+            ImportXmlResource(externalReferences, currentAssembly, "PipetteServer.Pipette.xml");
+
+            AddReverseReferences(externalReferences);
+            AttachLogicHandlers();
+        }
+    }
+
+    private void ImportXmlResource(IDictionary<NodeId, IList<IReference>> externalReferences, System.Reflection.Assembly assembly, string resourcePath)
+    {
+        using var stream = assembly.GetManifestResourceStream(resourcePath);
+        if (stream == null) 
+        {
+            throw new Exception($"Cannot find embedded resource: {resourcePath} in assembly {assembly.FullName}");
+        }
+        var nodeSet = UANodeSet.Read(stream);
+        foreach (var nameSpace in nodeSet.NamespaceUris)
+        {
+            SystemContext.NamespaceUris.GetIndexOrAppend(nameSpace);
         }
 
-        public override void CreateAddressSpace(IDictionary<NodeId, IList<IReference>> externalReferences)
+        var predefinedNodes = new NodeStateCollection();
+        nodeSet.Import(SystemContext, predefinedNodes);
+        
+        var toImportNodes = new List<NodeState>();
+        foreach (var node in predefinedNodes)
         {
-            lock (Lock)
+            if (node is BaseTypeState state && state.SuperTypeId != null &&
+                node.NodeId.NamespaceIndex == state.SuperTypeId.NamespaceIndex &&
+                !PredefinedNodes.ContainsKey(state.SuperTypeId))
             {
-                if (!externalReferences.TryGetValue(ObjectIds.ObjectsFolder, out IList<IReference> references))
-                {
-                    externalReferences[ObjectIds.ObjectsFolder] = references = new List<IReference>();
-                }
-
-                var foundationAssembly = typeof(OpcUa.Lads.Foundation.Server.NodeManager).Assembly;
-
-                ImportXmlResource(externalReferences, foundationAssembly, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.DI.NodeSet2.xml");
-                ImportXmlResource(externalReferences, foundationAssembly, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.AMB.NodeSet2.xml");
-                ImportXmlResource(externalReferences, foundationAssembly, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.Machinery.NodeSet2.xml");
-                ImportXmlResource(externalReferences, foundationAssembly, "OpcUa.Lads.Foundation.Server.NodeSet.Opc.Ua.LADS.NodeSet2.xml");
-
-                var pipetteAssembly = typeof(PipetteNodeManager).Assembly;
-                ImportXmlResource(externalReferences, pipetteAssembly, "PipetteServer.Pipette.xml");
-
-                AddReverseReferences(externalReferences);
-                AttachLogicHandlers();
+                toImportNodes.Add(node);
             }
-        }
-
-        private void ImportXmlResource(IDictionary<NodeId, IList<IReference>> externalReferences, System.Reflection.Assembly assembly, string resourcePath)
-        {
-            using var stream = assembly.GetManifestResourceStream(resourcePath);
-            if (stream == null) 
-            {
-                throw new Exception($"Cannot find embedded resource: {resourcePath} in assembly {assembly.FullName}");
-            }
-            var nodeSet = UANodeSet.Read(stream);
-            foreach (var nameSpace in nodeSet.NamespaceUris)
-            {
-                SystemContext.NamespaceUris.GetIndexOrAppend(nameSpace);
-            }
-
-            var predefinedNodes = new NodeStateCollection();
-            nodeSet.Import(SystemContext, predefinedNodes);
-            
-            var toImportNodes = new List<NodeState>();
-            foreach (var node in predefinedNodes)
-            {
-                if (node is BaseTypeState state && state.SuperTypeId != null &&
-                    node.NodeId.NamespaceIndex == state.SuperTypeId.NamespaceIndex &&
-                    !PredefinedNodes.ContainsKey(state.SuperTypeId))
-                {
-                    toImportNodes.Add(node);
-                }
-                else
-                {
-                    AddPredefinedNode(SystemContext, node);
-                }
-            }
-
-            foreach (var node in toImportNodes)
+            else
             {
                 AddPredefinedNode(SystemContext, node);
             }
         }
 
-        private void AttachLogicHandlers()
+        foreach (var node in toImportNodes)
         {
-            ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/Pipette/");
-
-            if (FindPredefinedNode(new NodeId(7017u, ns), typeof(MethodState)) is MethodState startMethod)
-                startMethod.OnCallMethod = Method_OnCall;
-
-            if (FindPredefinedNode(new NodeId(7018u, ns), typeof(MethodState)) is MethodState stopMethod)
-                stopMethod.OnCallMethod = Method_OnCall;
-
-            if (FindPredefinedNode(new NodeId(7024u, ns), typeof(MethodState)) is MethodState dcStopMethod)
-                dcStopMethod.OnCallMethod = Method_OnCall;
-
-            uint[] writableVariableIds = [ 6018u, 6201u, 6203u ];
-
-            foreach (var varId in writableVariableIds)
-            {
-                if (FindPredefinedNode(new NodeId(varId, ns), typeof(BaseVariableState)) is BaseVariableState variableNode)
-                {
-                    variableNode.OnWriteValue = new NodeValueEventHandler(OnVariableWrite);
-                }
-            }
-            
-            // Инициализация статуса
-            if (FindPredefinedNode(new NodeId(6197u, ns), typeof(BaseVariableState)) is BaseVariableState stateNode)
-                UpdateNodeValue(stateNode, new Opc.Ua.LocalizedText("en", "Idle"));
+            AddPredefinedNode(SystemContext, node);
         }
+    }
 
-        private ServiceResult OnVariableWrite(ISystemContext context, NodeState node, NumericRange indexRange, QualifiedName dataEncoding, ref object value, ref StatusCode statusCode, ref DateTime timestamp)
+    private void AttachLogicHandlers()
+    {
+        ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://Pipette");
+
+        // Подключаем методы из FunctionalUnitState (Aspirate, Dispense, AttachTip, EjectTip)
+        if (FindPredefinedNode(new NodeId(7004u, ns), typeof(MethodState)) is MethodState aspirateMethod)
+            aspirateMethod.OnCallMethod = Method_OnCall;
+
+        if (FindPredefinedNode(new NodeId(7005u, ns), typeof(MethodState)) is MethodState dispenseMethod)
+            dispenseMethod.OnCallMethod = Method_OnCall;
+
+        if (FindPredefinedNode(new NodeId(7006u, ns), typeof(MethodState)) is MethodState attachTipMethod)
+            attachTipMethod.OnCallMethod = Method_OnCall;
+
+        if (FindPredefinedNode(new NodeId(7007u, ns), typeof(MethodState)) is MethodState ejectTipMethod)
+            ejectTipMethod.OnCallMethod = Method_OnCall;
+    }
+
+    private ServiceResult Method_OnCall(ISystemContext context, MethodState method, IList<object> inputArguments, IList<object> outputArguments)
+    {
+        ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://Pipette");
+        
+        // NodeId 6036 - Это CurrentState внутри FunctionalUnitState
+        var currentStateNode = FindPredefinedNode(new NodeId(6096u, ns), typeof(BaseVariableState)) as BaseVariableState;
+        
+        // NodeId 6092 - Это CurrentValue внутри VolumeControl
+        var currentVolumeNode = FindPredefinedNode(new NodeId(6092u, ns), typeof(BaseVariableState)) as BaseVariableState;
+        
+        // NodeId 6093 - Это TargetValue внутри VolumeControl
+        var targetVolumeNode = FindPredefinedNode(new NodeId(6093u, ns), typeof(BaseVariableState)) as BaseVariableState;
+
+        var stateBefore = currentStateNode?.Value as Opc.Ua.LocalizedText;
+        Console.WriteLine($"[Pipette]: Метод вызван => '{method.BrowseName.Name}'. Current State: {stateBefore?.Text ?? "Unknown"}");
+
+        // Запуск асинхронной задачи в зависимости от метода
+        StartDeviceTask(method.BrowseName.Name, currentStateNode, currentVolumeNode, targetVolumeNode);
+
+        Console.WriteLine($"[Pipette]: Command '{method.BrowseName.Name}' dispatched.");
+
+        return StatusCodes.Good;
+    }
+
+    private void StartDeviceTask(string commandName, BaseVariableState currentStateNode, BaseVariableState currentVolumeNode, BaseVariableState targetVolumeNode)
+    {
+        _taskCts?.Cancel();
+        _taskCts = new CancellationTokenSource();
+        var token = _taskCts.Token;
+
+        Task.Run(async () =>
         {
-            Console.WriteLine($"[Pipette Remote Control]: Variable '{node.BrowseName.Name}' updated to '{value}' by client.");
-            return StatusCodes.Good; 
-        }
-
-        private ServiceResult Method_OnCall(ISystemContext context, MethodState method, IList<object> inputArguments, IList<object> outputArguments)
-        {
-            ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/Pipette/");
-            var currentStateNode = FindPredefinedNode(new NodeId(6197u, ns), typeof(BaseVariableState)) as BaseVariableState;
-            string stateBefore = (currentStateNode?.Value as Opc.Ua.LocalizedText)?.Text ?? "Unknown";
-
-            Console.WriteLine($"[Pipette Remote Control]: Execute Command => '{method.BrowseName.Name}'. State Before: {stateBefore}");
-
-            if (method.BrowseName.Name == "StartPipetting")
+            try
             {
-                StartPipettingTask();
-            }
-            else if (method.BrowseName.Name == "StopPipetting" || method.BrowseName.Name == "Stop")
-            {
-                _pipettingCts?.Cancel();
-                Console.WriteLine("[Pipette]: Pipetting manually aborted.");
-            }
-
-            string stateAfter = (currentStateNode?.Value as Opc.Ua.LocalizedText)?.Text ?? "Unknown";
-            Console.WriteLine($"[Pipette Remote Control]: Execute Command => '{method.BrowseName.Name}' dispatched. State After (immediate): {stateAfter}");
-
-            return StatusCodes.Good;
-        }
-
-        private void StartPipettingTask()
-        {
-            _pipettingCts?.Cancel();
-            _pipettingCts = new CancellationTokenSource();
-            var token = _pipettingCts.Token;
-
-            ushort ns = SystemContext.NamespaceUris.GetIndexOrAppend("http://lab.server/Pipette/");
-            
-            var currentStateNode = FindPredefinedNode(new NodeId(6197u, ns), typeof(BaseVariableState)) as BaseVariableState;    
-            var currentVolumeNode = FindPredefinedNode(new NodeId(6200u, ns), typeof(BaseVariableState)) as BaseVariableState;   
-            var totalizedVolumeNode = FindPredefinedNode(new NodeId(6202u, ns), typeof(BaseVariableState)) as BaseVariableState; 
-
-            Task.Run(async () =>
-            {
-                try
-                {
-                    UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Running"));
-                    double currentVolume = 0;
-
-                    double totalVolume = 0;
-                    if (totalizedVolumeNode?.Value is double existingTotal) totalVolume = existingTotal; 
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        token.ThrowIfCancellationRequested();
-
-                        currentVolume += 10.5; 
-                        totalVolume += 10.5;
-                        
-                        UpdateNodeValue(currentVolumeNode, currentVolume);
-                        UpdateNodeValue(totalizedVolumeNode, totalVolume);
-
-                        Console.WriteLine($"[Pipette]: Aspirating process... Volume in tip: {currentVolume} uL");
-                        await Task.Delay(1000, token);
-                    }
-
-                    // Успешное завершение
-                    Console.WriteLine("[Pipette]: Dispensing everything...");
-                    await Task.Delay(1000, token);
-                    token.ThrowIfCancellationRequested();
-
-                    UpdateNodeValue(currentVolumeNode, 0.0); 
-                    UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Complete"));
-                    
-                    Console.WriteLine("[Pipette]: Pipetting Completed successfully.");
-                    Console.WriteLine("StateMachineStatus: Completed - Return to Idle");
-
-                    // Возврат в Idle
-                    await Task.Delay(1000); 
-                    UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Idle"));
-                    Console.WriteLine("StateMachineStatus: Idle");
-                }
-                catch (OperationCanceledException)
-                {
-                    UpdateNodeValue(currentVolumeNode, 0.0);
-                    UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Aborted"));
-                    
-                    Console.WriteLine("[Pipette]: Pipetting manually aborted. State -> Aborted");
-
-                    // Возврат в Idle
-                    await Task.Delay(1000); 
-                    UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Idle"));
-                    Console.WriteLine("StateMachineStatus: Idle");
-                }
-            }, token);
-        }
-
-        private void UpdateNodeValue(BaseVariableState node, object newValue)
-        {
-            if (node != null)
-            {
-                node.Value = newValue;
-                node.Timestamp = DateTime.UtcNow;
-                node.StatusCode = StatusCodes.Good;
+                UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Running"));
+                Console.WriteLine($"[Pipette]: Starting '{commandName}' operation... State -> Running");
                 
-                // ВАЖНО: Обязательно нужно вызывать это, чтобы уведомить OPC UA Сервер 
-                // и сбросить маски изменений, тогда подписчики получат DataChange Notification.
-                node.ClearChangeMasks(SystemContext, false); 
+                // Целевой объем или симулятивный набор (по умолчанию)
+                double volumeValue = 0.0;
+                if (targetVolumeNode?.Value != null)
+                {
+                    volumeValue = Convert.ToDouble(targetVolumeNode.Value);
+                }
+
+                // Симуляция логики в зависимости от вызванного метода
+                if (commandName == "Aspirate")
+                {
+                    Console.WriteLine($"[Pipette]: Drawing {volumeValue} ml...");
+                    await Task.Delay(2000, token); 
+                    UpdateNodeValue(currentVolumeNode, volumeValue);
+                }
+                else if (commandName == "Dispense")
+                {
+                    Console.WriteLine($"[Pipette]: Dispensing {volumeValue} ml...");
+                    await Task.Delay(2000, token); 
+                    UpdateNodeValue(currentVolumeNode, 0.0); // Сбрасываем до нуля
+                }
+                else 
+                {
+                    // Для других методов (AttachTip, EjectTip) просто ждем
+                    await Task.Delay(1500, token);
+                }
+
+                token.ThrowIfCancellationRequested();
+
+                UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Complete"));
+                Console.WriteLine($"[Pipette]: '{commandName}' operation Complete. State -> Complete");
+                
+                // Автоматический возврат в Idle
+                await Task.Delay(1500, token);
+                UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Idle"));
+                Console.WriteLine("[Pipette]: Ready for next command. State -> Idle");
             }
+            catch (OperationCanceledException)
+            {
+                UpdateNodeValue(currentStateNode, new Opc.Ua.LocalizedText("en", "Aborted"));
+                Console.WriteLine($"[Pipette]: '{commandName}' operation was cancelled. State -> Aborted");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Pipette]: Error: {ex.Message}");
+            }
+        }, token);
+    }
+
+    private void UpdateNodeValue(BaseVariableState node, object newValue)
+    {
+        if (node != null)
+        {
+            node.Value = newValue;
+            node.Timestamp = DateTime.UtcNow;
+            node.ClearChangeMasks(SystemContext, false); // Обязательно для уведомления подписок клиента
         }
     }
 }
-
