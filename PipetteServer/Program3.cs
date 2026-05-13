@@ -2,6 +2,7 @@
 using Opc.Ua;
 using Serilog;
 using System.Net;
+using System.Net.Sockets;
 using OpcUa.Lads.Foundation.Server;
 
 // 1. Создаем экземпляры приложения и сервера
@@ -29,13 +30,28 @@ Log.Information("Shutting down...");
 Stop();
 
 
+string GetIp()
+{
+    try
+    {
+        // Получаем IPv4 адрес компьютера
+        var addresses = Dns.GetHostAddresses(Dns.GetHostName());
+        var ipv4 = addresses.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
+        return ipv4?.ToString() ?? "127.0.0.1";
+    }
+    catch
+    {
+        return "127.0.0.1";
+    }
+}
+
 void Configure(string applicationName, int port)
 {
     // Создаем параметры конфигурации сервера: название, URI, порты, сертификаты безопасности
     var configuration = new ApplicationConfiguration
     {
         ApplicationName = applicationName,
-        ApplicationUri = $"urn:{Dns.GetHostName()}:{applicationName}",
+        ApplicationUri = $"urn:{GetIp()}:{applicationName}",
         ProductUri = $"uri:opcfoundation.org:{applicationName}",
         ApplicationType = ApplicationType.Server,
 
@@ -45,7 +61,7 @@ void Configure(string applicationName, int port)
             {
                 StoreType = "Directory",
                 StorePath = "%LocalApplicationData%/OPC Foundation/pki/own",
-                SubjectName = $"CN={applicationName}, C=US, S=Arizona, O=OPC Foundation, DC={Dns.GetHostName()}"
+                SubjectName = $"CN={applicationName}, C=US, S=Arizona, O=OPC Foundation, DC={GetIp()}"
             },
             TrustedIssuerCertificates = new CertificateTrustList
             {
@@ -74,7 +90,7 @@ void Configure(string applicationName, int port)
         {
             BaseAddresses =
             [
-                $"opc.tcp://{Dns.GetHostName()}:{port}/{applicationName}"
+                $"opc.tcp://{GetIp()}:{port}/{applicationName}"
             ],
             SecurityPolicies =
             [
