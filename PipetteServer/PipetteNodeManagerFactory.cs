@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace OpcUa.Lads.Foundation.Server;
 
 /// <summary>
-/// Фабрика менеджера узлов. Класс отвечает за интеграцию логики в основной OPC UA Сервер.
+/// Фабрика менеджера узлов. Интеграция логики в основной OPC UA Сервер.
 /// </summary>
 public class PipetteNodeManagerFactory : INodeManagerFactory
 {
@@ -226,42 +226,51 @@ public class PipetteNodeManager : CustomNodeManager2
                 double currentVol = 0.0;
                 if (currentVolumeNode?.Value != null) currentVol = Convert.ToDouble(currentVolumeNode.Value);
 
+                bool currentTipState = tipCurrentNode?.Value is true;
+
                 if (commandName == "Aspirate") 
                 {
-                    Console.WriteLine($"[Pipette]: Drawing fluid up to {targetVol} ml...");
+                    Console.WriteLine($"[Pipette]: Liquid Volume Before Aspirate: {currentVol:F1} ml");
                     while (currentVol < targetVol)
                     {
                         currentVol += 1.0; 
                         if (currentVol > targetVol) currentVol = targetVol;
                         UpdateNodeValue(currentVolumeNode, currentVol); 
+                        
+                        Console.WriteLine($"[Pipette]: Aspirating... CurrentValue -> {currentVol:F1} ml");
                         await Task.Delay(200, token); 
                     }
+                    Console.WriteLine($"[Pipette]: Liquid Volume After Aspirate: {currentVol:F1} ml");
                 }
                 else if (commandName == "Dispense") 
                 {
-                    Console.WriteLine($"[Pipette]: Dispensing fluid down to {targetVol} ml...");
+                    Console.WriteLine($"[Pipette]: Liquid Volume Before Dispense: {currentVol:F1} ml");
                     while (currentVol > targetVol)
                     {
                         currentVol -= 1.0; 
                         if (currentVol < targetVol) currentVol = targetVol;
                         UpdateNodeValue(currentVolumeNode, currentVol); 
+                        
+                        Console.WriteLine($"[Pipette]: Dispensing... CurrentValue -> {currentVol:F1} ml");
                         await Task.Delay(200, token);
                     }
+                    Console.WriteLine($"[Pipette]: Liquid Volume After Dispense: {currentVol:F1} ml");
                 }
                 else if (commandName == "AttachTip") 
                 {
-                    Console.WriteLine($"[Pipette]: Attaching Tip...");
+                    Console.WriteLine($"[Pipette]: Tip status before AttachTip: {(currentTipState ? "Attached" : "Detached")}");
                     await Task.Delay(1000, token); 
                     UpdateNodeValue(tipCurrentNode, true); 
+                    Console.WriteLine($"[Pipette]: Tip status after AttachTip: Attached");
                 }
                 else if (commandName == "EjectTip") 
                 {
-                    Console.WriteLine($"[Pipette]: Ejecting Tip...");
+                    Console.WriteLine($"[Pipette]: Tip status before EjectTip: {(currentTipState ? "Attached" : "Detached")}");
                     await Task.Delay(1000, token); 
                     UpdateNodeValue(tipCurrentNode, false); 
                     
                     UpdateNodeValue(currentVolumeNode, 0.0);
-                    Console.WriteLine($"[Pipette]: Volume reset to 0.0 due to tip ejection.");
+                    Console.WriteLine($"[Pipette]: Tip status after EjectTip: Detached. Volume reset to 0.0.");
                 }
 
                 token.ThrowIfCancellationRequested();
