@@ -627,7 +627,7 @@
             <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
         </References>
     </UAVariable>
-    <UAMethod NodeId="ns=4;i=7005" BrowseName="4:Dispense" ParentNodeId="ns=4;i=5006">
+    <UAMethod NodeId="ns=4;i=7005" BrowseName="3:Dispense" ParentNodeId="ns=4;i=5006">
         <DisplayName>Dispense</DisplayName>
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=4;i=5006</Reference>
@@ -649,7 +649,7 @@
             <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
         </References>
     </UAVariable>
-    <UAMethod NodeId="ns=4;i=7006" BrowseName="4:AttachTip" ParentNodeId="ns=4;i=5006">
+    <UAMethod NodeId="ns=4;i=7006" BrowseName="3:AttachTip" ParentNodeId="ns=4;i=5006">
         <DisplayName>AttachTip</DisplayName>
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=4;i=5006</Reference>
@@ -671,7 +671,7 @@
             <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
         </References>
     </UAVariable>
-    <UAMethod NodeId="ns=4;i=7007" BrowseName="4:EjectTip" ParentNodeId="ns=4;i=5006">
+    <UAMethod NodeId="ns=4;i=7007" BrowseName="3:EjectTip" ParentNodeId="ns=4;i=5006">
         <DisplayName>EjectTip</DisplayName>
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=4;i=5006</Reference>
@@ -723,7 +723,7 @@
             <Reference ReferenceType="HasTypeDefinition">ns=3;i=1044</Reference>
         </References>
     </UAObject>
-    <UAVariable DataType="Double" NodeId="ns=4;i=6092" BrowseName="3:CurrentValue" ParentNodeId="ns=4;i=5018">
+    <UAVariable DataType="Double" NodeId="ns=4;i=6092" BrowseName="3:CurrentValue" ParentNodeId="ns=4;i=5018" AccessLevel="3" UserAccessLevel="3">
         <DisplayName>CurrentValue</DisplayName>
         <Description>CurrentValue is the current process value.</Description>
         <References>
@@ -731,7 +731,7 @@
             <Reference ReferenceType="HasTypeDefinition">i=17570</Reference>
         </References>
     </UAVariable>
-    <UAVariable DataType="Double" NodeId="ns=4;i=6093" BrowseName="3:TargetValue" ParentNodeId="ns=4;i=5018">
+    <UAVariable DataType="Double" NodeId="ns=4;i=6093" BrowseName="3:TargetValue" ParentNodeId="ns=4;i=5018" AccessLevel="3" UserAccessLevel="3">
         <DisplayName>TargetValue</DisplayName>
         <Description>TargetValue is the targeted set-point value.</Description>
         <References>
@@ -755,7 +755,7 @@
             <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
         </References>
     </UAVariable>
-    <UAVariable DataType="LocalizedText" NodeId="ns=4;i=6096" BrowseName="CurrentState" ParentNodeId="ns=4;i=5019">
+    <UAVariable DataType="LocalizedText" NodeId="ns=4;i=6096" BrowseName="CurrentState" ParentNodeId="ns=4;i=5019" AccessLevel="3" UserAccessLevel="3">
         <DisplayName>CurrentState</DisplayName>
         <References>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=4;i=5019</Reference>
@@ -954,7 +954,7 @@
             <Reference ReferenceType="HasTypeDefinition">ns=3;i=1044</Reference>
         </References>
     </UAObject>
-    <UAVariable NodeId="ns=4;i=6118" BrowseName="3:CurrentValue" ParentNodeId="ns=4;i=5023">
+    <UAVariable NodeId="ns=4;i=6118" BrowseName="3:CurrentValue" ParentNodeId="ns=4;i=5023" AccessLevel="3" UserAccessLevel="3">
         <DisplayName>CurrentValue</DisplayName>
         <Description>CurrentValue is a current discrete process value.</Description>
         <References>
