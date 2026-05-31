@@ -1,11 +1,7 @@
 ﻿using Opc.Ua;
 using Opc.Ua.Server;
 using Opc.Ua.Export;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using System;
-using System.Collections.Generic;
+using Microsoft.Data.Sqlite;
 
 namespace OpcUa.Lads.Foundation.Server;
 
@@ -28,6 +24,8 @@ public class PipetteNodeManagerFactory : INodeManagerFactory
 public class PipetteNodeManager : CustomNodeManager2
 {
     private CancellationTokenSource _taskCts;
+    private readonly string _connectionString;
+    private readonly object _dbLock = new object();
 
     public PipetteNodeManager(IServerInternal server, ApplicationConfiguration configuration) 
         : base(server, configuration, 
@@ -45,6 +43,88 @@ public class PipetteNodeManager : CustomNodeManager2
             "http://opcfoundation.org/UA/LADS/",
             "http://Pipette"
         ];
+        
+        // Устанавливаем путь к БД в папке проекта PipetteServer
+        // AppContext.BaseDirectory = bin/Debug/net9.0, поэтому идем на 3 уровня вверх
+        var projectDirectory = Path.Combine(AppContext.BaseDirectory, "..", "..", "..");
+        var dbPath = Path.Combine(projectDirectory, "pipette_methods.db");
+        _connectionString = $"Data Source={Path.GetFullPath(dbPath)}";
+        
+        Console.WriteLine($"[Database] Connection string: {_connectionString}");
+        
+        // Инициализируем базу данных при создании менеджера
+        InitializeDatabase();
+    }
+
+    /// <summary>
+    /// Инициализирует SQLite базу данных для логирования вызовов методов.
+    /// </summary>
+    private void InitializeDatabase()
+    {
+        try
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = @"
+                        CREATE TABLE IF NOT EXISTS MethodCalls (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            MethodName TEXT NOT NULL,
+                            CalledAt TEXT NOT NULL
+                        )";
+                    command.ExecuteNonQuery();
+                }
+            }
+            
+            // Проверяем, создался ли файл
+            var dbPath = _connectionString.Replace("Data Source=", "");
+            if (File.Exists(dbPath))
+            {
+                var fileInfo = new FileInfo(dbPath);
+                Console.WriteLine($"[Database] ✅ Database created successfully!");
+                Console.WriteLine($"[Database] 📁 Path: {fileInfo.FullName}");
+                Console.WriteLine($"[Database] 📊 Size: {fileInfo.Length} bytes");
+            }
+            else
+            {
+                Console.WriteLine($"[Database] ⚠️ Database file not found at: {dbPath}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Database] ❌ Error initializing database: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Логирует вызов метода в базу данных.
+    /// </summary>
+    private void LogMethodCall(string methodName)
+    {
+        lock (_dbLock)
+        {
+            try
+            {
+                using (var connection = new SqliteConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "INSERT INTO MethodCalls (MethodName, CalledAt) VALUES (@methodName, @calledAt)";
+                        command.Parameters.AddWithValue("@methodName", methodName);
+                        command.Parameters.AddWithValue("@calledAt", DateTime.UtcNow.ToString("o"));
+                        command.ExecuteNonQuery();
+                    }
+                }
+                Console.WriteLine($"[Database] ✅ Logged: {methodName} at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Database] ❌ Error logging method call: {ex.Message}");
+            }
+        }
     }
 
     public override void CreateAddressSpace(IDictionary<NodeId, IList<IReference>> externalReferences)
@@ -194,6 +274,9 @@ public class PipetteNodeManager : CustomNodeManager2
 
         var stateBefore = currentStateNode?.Value as Opc.Ua.LocalizedText;
         Console.WriteLine($"[Pipette]: Method '{method.BrowseName.Name}' called. Current State: {stateBefore?.Text ?? "Unknown"}");
+
+        // Логируем вызов метода в БД
+        LogMethodCall(method.BrowseName.Name);
 
         if ((method.BrowseName.Name == "Aspirate" || method.BrowseName.Name == "Dispense") && tipCurrentNode?.Value is false)
         {

@@ -15,4 +15,8 @@
       <ProjectReference Include="..\OpcUa.Lads.Foundation.Server\OpcUa.Lads.Foundation.Server.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Data.Sqlite" Version="11.0.0-preview.4.26230.115" />
+    </ItemGroup>
+
 </Project>
